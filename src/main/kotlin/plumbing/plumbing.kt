@@ -59,6 +59,67 @@ fun commitTree(treeHash: String, commitMessage: String, parentCommit: String = "
     return hashObject(content, type = "commit", write = true)
 }
 
+fun catFile(hashObject: String, option: String): String {
+    val workingDirectory = System.getProperty("user.dir")
+    val path = "${workingDirectory}/.kit/objects/${hashObject.substring(0, 2)}/${hashObject.substring(2)}"
+    val content = Zlib.inflate(File(path).readBytes())
+    val contentStr = content.toString(Charsets.UTF_8)
+    val type = contentStr.substringBefore(" ")
+    val size = contentStr.substringAfter(" ").substringBefore("\u0000").toInt()
+    val contentWithoutHeader = contentStr.substringAfter("\u0000")
+
+    /**
+     * content without the header depends on the type of the object
+     * - object: just use UTF-8 encoding
+     * - commit: just use UTF-8 encoding
+     * - tree: use the tree parser
+     * */
+
+    return when (option) {
+        "-t" -> type
+        "-s" -> size.toString()
+        "-p" -> {
+            if (type == "tree") {
+                val list = content.toMutableList()
+                // remove till the first NUL
+                list.subList(0, list.indexOf(0.toByte()) + 1).clear()
+                parseTreeContent(list)
+            } else
+                contentWithoutHeader
+        }
+
+        else -> "usage: cat-file [-t | -s | -p] <object>"
+    }
+}
+
+fun parseTreeContent(contentWithoutHeader: MutableList<Byte>): String {
+    /**
+     * format of entries in the tree:
+     * mode SP path NUL sha1
+     * mode: 6 bytes
+     * SP: 1 byte
+     * path: variable length
+     * NUL: 1 byte
+     * sha1: 20 bytes
+     * parse till the end of the content
+     * */
+    val entries = mutableListOf<TreeEntry>()
+    while (contentWithoutHeader.isNotEmpty()) {
+        val mode = contentWithoutHeader.subList(0, 6).toByteArray().toString(Charsets.UTF_8)
+        contentWithoutHeader.subList(0, 6).clear()
+        contentWithoutHeader.removeAt(0) // remove the space
+        val path = contentWithoutHeader.subList(0, contentWithoutHeader.indexOf(0.toByte())).toByteArray()
+            .toString(Charsets.UTF_8)
+        contentWithoutHeader.subList(0, contentWithoutHeader.indexOf(0.toByte()) + 1).clear()
+        val sha1 = contentWithoutHeader.subList(0, 20).joinToString("") { "%02x".format(it) }
+        contentWithoutHeader.subList(0, 20).clear()
+        entries.add(TreeEntry(mode, path, sha1))
+    }
+    return entries.joinToString("\n") {
+        "${it.mode} ${catFile(it.hash, "-t")} ${it.hash}\t${it.path}"
+    }
+}
+
 fun String.objectPath(): String {
     return "${System.getProperty("user.dir")}/.kit/objects/${this.substring(0, 2)}/${this.substring(2)}"
 }

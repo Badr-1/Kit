@@ -98,7 +98,7 @@
     </option>
   </component>
   <component name="RunManager" selected="Gradle.Tests in 'Git-A-Home-Made-Recipe-With-Kotlin.test'">
-    <configuration name="PlumbingKtTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="PlumbingKtTest.cat-file blob" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -111,7 +111,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;plumbing.PlumbingKtTest&quot;" />
+            <option value="&quot;plumbing.PlumbingKtTest.cat-file blob&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -122,7 +122,7 @@
       <ForceTestExec>true</ForceTestExec>
       <method v="2" />
     </configuration>
-    <configuration name="PlumbingKtTest.commit-tree invalid parent" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="PlumbingKtTest.cat-file commit" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -135,7 +135,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;plumbing.PlumbingKtTest.commit-tree invalid parent&quot;" />
+            <option value="&quot;plumbing.PlumbingKtTest.cat-file commit&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -146,7 +146,7 @@
       <ForceTestExec>true</ForceTestExec>
       <method v="2" />
     </configuration>
-    <configuration name="PlumbingKtTest.commit-tree invalid tree" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="PlumbingKtTest.cat-file invalid option" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -159,7 +159,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;plumbing.PlumbingKtTest.commit-tree invalid tree&quot;" />
+            <option value="&quot;plumbing.PlumbingKtTest.cat-file invalid option&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -170,7 +170,7 @@
       <ForceTestExec>true</ForceTestExec>
       <method v="2" />
     </configuration>
-    <configuration name="PlumbingKtTest.commit-tree valid commit with parent" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="PlumbingKtTest.cat-file tree" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -183,7 +183,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;plumbing.PlumbingKtTest.commit-tree valid commit with parent&quot;" />
+            <option value="&quot;plumbing.PlumbingKtTest.cat-file tree&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -219,10 +219,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Gradle.Tests in 'Git-A-Home-Made-Recipe-With-Kotlin.test'" />
-        <item itemvalue="Gradle.PlumbingKtTest.commit-tree valid commit with parent" />
-        <item itemvalue="Gradle.PlumbingKtTest" />
-        <item itemvalue="Gradle.PlumbingKtTest.commit-tree invalid parent" />
-        <item itemvalue="Gradle.PlumbingKtTest.commit-tree invalid tree" />
+        <item itemvalue="Gradle.PlumbingKtTest.cat-file invalid option" />
+        <item itemvalue="Gradle.PlumbingKtTest.cat-file commit" />
+        <item itemvalue="Gradle.PlumbingKtTest.cat-file tree" />
+        <item itemvalue="Gradle.PlumbingKtTest.cat-file blob" />
       </list>
     </recent_temporary>
   </component>
@@ -267,13 +267,14 @@
         <watch expression="entriesContent.toMutableList().subList(12,13).toByteArray().toString(Charsets.UTF_8)" language="kotlin" />
         <watch expression="entriesContent.toMutableList().subList(13,23).joinToString(&quot;&quot;) { &quot;%02x&quot;.format(it) }" language="kotlin" />
         <watch expression="getHead()" />
+        <watch expression="&quot;100644 blob 557db03de997c86a4a028e1ebd3a1ceb225be238&#9;test.txt&quot;" language="kotlin" />
       </configuration>
     </watches-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Git_A_Home_Made_Recipe_With_Kotlin$PlumbingKtTest_updateIndex_remove_file_leave_the_rest.ic" NAME="PlumbingKtTest.updateIndex remove file leave the rest Coverage Results" MODIFIED="1680315159948" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/Git_A_Home_Made_Recipe_With_Kotlin$UtilsKtTest.ic" NAME="UtilsKtTest Coverage Results" MODIFIED="1680307152881" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
-    <SUITE FILE_PATH="coverage/Git_A_Home_Made_Recipe_With_Kotlin$Tests_in__Git_A_Home_Made_Recipe_With_Kotlin_test_.ic" NAME="Tests in 'Git-A-Home-Made-Recipe-With-Kotlin.test' Coverage Results" MODIFIED="1680378040955" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/Git_A_Home_Made_Recipe_With_Kotlin$Tests_in__Git_A_Home_Made_Recipe_With_Kotlin_test_.ic" NAME="Tests in 'Git-A-Home-Made-Recipe-With-Kotlin.test' Coverage Results" MODIFIED="1680378084592" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/Git_A_Home_Made_Recipe_With_Kotlin$UtilsKtTest_runCommandFail.ic" NAME="UtilsKtTest.runCommandFail Coverage Results" MODIFIED="1680306204563" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/Git_A_Home_Made_Recipe_With_Kotlin$PlumbingKtTest.ic" NAME="PlumbingKtTest Coverage Results" MODIFIED="1680358118890" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
   </component>

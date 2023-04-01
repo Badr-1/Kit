@@ -875,4 +875,122 @@ class PlumbingKtTest {
         val commit2 = commitTree(tree2, "test commit 2", commit)
         assert(commit2.objectExists())
     }
+
+    @Test
+    fun `cat-file blob`() {
+        // create a working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        // create object database
+        val objectDatabase = File("src/test/resources/workingDirectory/.kit/objects")
+        objectDatabase.mkdirs()
+        // create a file
+        val file = File("src/test/resources/workingDirectory/test.txt")
+        file.createNewFile()
+        file.writeText("Hello World")
+        // hash the file
+        val sha1 = hashObject(file.path, write = true)
+        // cat the file
+        val content = catFile(sha1, "-p")
+        assertEquals("Hello World", content)
+        val size = catFile(sha1, "-s")
+        assertEquals("11", size)
+        val type = catFile(sha1, "-t")
+        assertEquals("blob", type)
+    }
+
+    @Test
+    fun `cat-file tree`() {
+        // create a working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        // create object database
+        val objectDatabase = File("src/test/resources/workingDirectory/.kit/objects")
+        objectDatabase.mkdirs()
+        // create a file
+        val file = File("src/test/resources/workingDirectory/test.txt")
+        file.createNewFile()
+        file.writeText("Hello World")
+        // update the index
+        updateIndex(file.path, "-a", hashObject(file.path, write = true), "100644")
+        // write tree
+        val sha1 = writeTree("src/test/resources/workingDirectory", true)
+        // cat the file
+        val content = catFile(sha1, "-p")
+        assertEquals("100644 blob 5e1c309dae7f45e0f39b1bf3ac3cd9db12e7d689\ttest.txt", content)
+        val size = catFile(sha1, "-s")
+        assertEquals("36", size)
+        val type = catFile(sha1, "-t")
+        assertEquals("tree", type)
+
+        // clean up
+        clearIndex()
+    }
+
+    @Test
+    fun `cat-file commit`() {
+        // create a working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        // create object database
+        val objectDatabase = File("src/test/resources/workingDirectory/.kit/objects")
+        objectDatabase.mkdirs()
+        // create refs and refs/heads
+        val refs = File("src/test/resources/workingDirectory/.kit/refs")
+        refs.mkdirs()
+        val heads = File("src/test/resources/workingDirectory/.kit/refs/heads")
+        heads.mkdirs()
+        // create HEAD file
+        val head = File("src/test/resources/workingDirectory/.kit/HEAD")
+        head.createNewFile()
+        head.writeText("ref: refs/heads/master")
+        // create a file
+        val file = File("src/test/resources/workingDirectory/test.txt")
+        file.createNewFile()
+        file.writeText("Hello World")
+        // update the index
+        updateIndex(file.path, "-a", hashObject(file.path, write = true), "100644")
+        // write tree
+        val tree = writeTree("src/test/resources/workingDirectory", true)
+        // commit tree
+        val commit = commitTree(tree, "test commit")
+        assert(commit.objectExists())
+        // cat the file
+        val content = catFile(commit, "-p")
+        assertEquals(4, content.split("\n").size)
+        val size = catFile(commit, "-s")
+        assertEquals("154", size)
+        val type = catFile(commit, "-t")
+        assertEquals("commit", type)
+
+        // clean up
+        clearIndex()
+    }
+
+    @Test
+    fun `cat-file invalid option`() {
+        // create a working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        // create object database
+        val objectDatabase = File("src/test/resources/workingDirectory/.kit/objects")
+        objectDatabase.mkdirs()
+        // create a file
+        val file = File("src/test/resources/workingDirectory/test.txt")
+        file.createNewFile()
+        file.writeText("Hello World")
+        // hash the file
+        val sha1 = hashObject(file.path, write = true)
+        // cat the file
+        val content = catFile(sha1, "-x")
+        assertEquals("usage: cat-file [-t | -s | -p] <object>", content)
+    }
 }
