@@ -5,9 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d3a3764e-6671-45a4-a6f3-11e9b2af232f" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/plumbing/GitIndex.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/Utils.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/Utils.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/plumbing/GitIndex.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/plumbing/GitIndex.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/plumbing/plumbing.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/plumbing/plumbing.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/kotlin/plumbing/PlumbingKtTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/plumbing/PlumbingKtTest.kt" afterDir="false" />
     </list>
@@ -27,7 +27,17 @@
         <task path="$PROJECT_DIR$">
           <activation />
         </task>
-        <projects_view />
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="Git-A-Home-Made-Recipe-With-Kotlin" type="f1a62948:ProjectNode" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
       </state>
     </system>
   </component>
@@ -37,6 +47,7 @@
         <option value="Kotlin Object" />
         <option value="JUnit5 Test Class" />
         <option value="Kotlin Class" />
+        <option value="Kotlin File" />
       </list>
     </option>
   </component>
@@ -51,21 +62,25 @@
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
+    <option name="showMembers" value="true" />
     <option name="showVisibilityIcons" value="true" />
     <option name="sortByType" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary&quot;: &quot;JUnit5&quot;,
-    &quot;com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5&quot;: &quot;&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/badr/Documents/Git-A-Home-Made-Recipe-With-Kotlin&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary": "JUnit5",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5": "",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "/home/badr/Documents/Git-A-Home-Made-Recipe-With-Kotlin",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CreateTestDialog.Recents.Supers">
       <recent name="" />
@@ -77,7 +92,7 @@
       <recent name="plumbing" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.PlumbingKtTest">
+  <component name="RunManager" selected="Gradle.PlumbingKtTest.write-tree work with subdirectories">
     <configuration name="PlumbingKtTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -102,7 +117,7 @@
       <ForceTestExec>true</ForceTestExec>
       <method v="2" />
     </configuration>
-    <configuration name="PlumbingKtTest.loadIndex file" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="PlumbingKtTest.write-tree ignore files that aren't in the index" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -115,7 +130,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;plumbing.PlumbingKtTest.loadIndex file&quot;" />
+            <option value="&quot;plumbing.PlumbingKtTest.write-tree ignore files that aren't in the index&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -126,7 +141,7 @@
       <ForceTestExec>true</ForceTestExec>
       <method v="2" />
     </configuration>
-    <configuration name="PlumbingKtTest.updateIndex add file that was already added after change" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="PlumbingKtTest.write-tree with write = true" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -139,7 +154,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;plumbing.PlumbingKtTest.updateIndex add file that was already added after change&quot;" />
+            <option value="&quot;plumbing.PlumbingKtTest.write-tree with write = true&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -150,7 +165,7 @@
       <ForceTestExec>true</ForceTestExec>
       <method v="2" />
     </configuration>
-    <configuration name="PlumbingKtTest.updateIndex remove file leave the rest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="PlumbingKtTest.write-tree work with subdirectories" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -163,7 +178,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;plumbing.PlumbingKtTest.updateIndex remove file leave the rest&quot;" />
+            <option value="&quot;plumbing.PlumbingKtTest.write-tree work with subdirectories&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -198,11 +213,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.PlumbingKtTest.write-tree work with subdirectories" />
         <item itemvalue="Gradle.PlumbingKtTest" />
+        <item itemvalue="Gradle.PlumbingKtTest.write-tree ignore files that aren't in the index" />
+        <item itemvalue="Gradle.PlumbingKtTest.write-tree with write = true" />
         <item itemvalue="Gradle.Tests in 'Git-A-Home-Made-Recipe-With-Kotlin.test'" />
-        <item itemvalue="Gradle.PlumbingKtTest.loadIndex file" />
-        <item itemvalue="Gradle.PlumbingKtTest.updateIndex add file that was already added after change" />
-        <item itemvalue="Gradle.PlumbingKtTest.updateIndex remove file leave the rest" />
       </list>
     </recent_temporary>
   </component>
@@ -217,21 +232,51 @@
     </task>
     <servers />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <ignored-roots>
+      <path value="$PROJECT_DIR$/src/test/resources/workingDirectory" />
+    </ignored-roots>
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="kotlin-line">
           <url>file://$PROJECT_DIR$/src/test/kotlin/plumbing/PlumbingKtTest.kt</url>
-          <line>214</line>
-          <option name="timeStamp" value="23" />
+          <line>646</line>
+          <option name="timeStamp" value="42" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
+    <pin-to-top-manager>
+      <pinned-members>
+        <PinnedItemInfo parentTag="plumbing.TreeEntry" memberName="name" />
+      </pinned-members>
+    </pin-to-top-manager>
+    <watches-manager>
+      <configuration name="GradleRunConfiguration">
+        <watch expression="entriesContent.toMutableList().subList(0,6).toByteArray().toString(Charsets.UTF_8)" language="kotlin" />
+        <watch expression="entriesContent.toMutableList().subList(6,7).toByteArray().toString(Charsets.UTF_8)" language="kotlin" />
+        <watch expression="entriesContent.toMutableList().subList(7,12).toByteArray().toString(Charsets.UTF_8)" language="kotlin" />
+        <watch expression="entriesContent.toMutableList().subList(12,13).toByteArray().toString(Charsets.UTF_8)" language="kotlin" />
+        <watch expression="entriesContent.toMutableList().subList(13,23).joinToString(&quot;&quot;) { &quot;%02x&quot;.format(it) }" language="kotlin" />
+      </configuration>
+    </watches-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Git_A_Home_Made_Recipe_With_Kotlin$PlumbingKtTest_updateIndex_remove_file_leave_the_rest.ic" NAME="PlumbingKtTest.updateIndex remove file leave the rest Coverage Results" MODIFIED="1680315159948" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/Git_A_Home_Made_Recipe_With_Kotlin$UtilsKtTest.ic" NAME="UtilsKtTest Coverage Results" MODIFIED="1680307152881" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
-    <SUITE FILE_PATH="coverage/Git_A_Home_Made_Recipe_With_Kotlin$Tests_in__Git_A_Home_Made_Recipe_With_Kotlin_test_.ic" NAME="Tests in 'Git-A-Home-Made-Recipe-With-Kotlin.test' Coverage Results" MODIFIED="1680316954924" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/Git_A_Home_Made_Recipe_With_Kotlin$Tests_in__Git_A_Home_Made_Recipe_With_Kotlin_test_.ic" NAME="Tests in 'Git-A-Home-Made-Recipe-With-Kotlin.test' Coverage Results" MODIFIED="1680354302327" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/Git_A_Home_Made_Recipe_With_Kotlin$UtilsKtTest_runCommandFail.ic" NAME="UtilsKtTest.runCommandFail Coverage Results" MODIFIED="1680306204563" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/Git_A_Home_Made_Recipe_With_Kotlin$PlumbingKtTest.ic" NAME="PlumbingKtTest Coverage Results" MODIFIED="1680317046737" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
   </component>

@@ -75,11 +75,6 @@ object GitIndex {
             println("\tversion: $version")
             println("\tentryCount: $entryCount")
 
-            if(entryCount == 0) {
-                entries.clear()
-                return
-            }
-
             // The next section of the index file consists of entry metadata
             for (i in 0 until entryCount) {
                 val ctimeSeconds = (ByteBuffer.wrap(indexBytes.copyOfRange(offset, offset + 4)).int)
@@ -169,11 +164,15 @@ object GitIndex {
         }
     }
 
+    fun list(): String {
+        return entries.joinToString("\n") { it.path }
+    }
+
     fun add(file: File, sha1: String, cacheInfo: String) {
         // check if the file is already in the index
-        if (entries.any { it.path == file.path.removePrefix("${indexFile.parentFile.parentFile.path}/") }) {
+        if (entries.any { it.path == file.relativeTo(File(System.getProperty("user.dir"))).path }) {
             // check if the file is modified
-            val entry = entries.first { it.path == file.path.removePrefix("${indexFile.parentFile.parentFile.path}/") }
+            val entry = entries.first { it.path == file.relativeTo(File(System.getProperty("user.dir"))).path }
             if (entry.sha1 == sha1) {
                 return
             }
@@ -200,9 +199,9 @@ object GitIndex {
 
     fun remove(file: File) {
         // check if the file is in the index
-        if (entries.any { it.path == file.path.removePrefix("${indexFile.parentFile.parentFile.path}/") }) {
+        if (entries.any { it.path == file.relativeTo(File(System.getProperty("user.dir"))).path }) {
             // remove the file from the index
-            entries.removeIf { it.path == file.path.removePrefix("${indexFile.parentFile.parentFile.path}/") }
+            entries.removeIf { it.path == file.relativeTo(File(System.getProperty("user.dir"))).path }
             // write header
             indexFile.writeBytes("".toByteArray())
             indexFile.writeBytes(signature.toByteArray())
@@ -220,6 +219,10 @@ object GitIndex {
         }
     }
 
+    fun get(path: String): GitIndexEntry? {
+        return entries.firstOrNull { it.path == path }
+    }
+
     private fun makeEntry(file: File, sha1: String, cacheInfo: String): GitIndexEntry {
         val attr = Files.readAttributes(file.toPath(), "unix:*")
         val creationTime = Instant.parse("${attr["creationTime"]!!}").epochSecond
@@ -232,7 +235,7 @@ object GitIndex {
         val uid = attr["uid"]!!.toString().toInt()
         val gid = attr["gid"]!!.toString().toInt()
         val fileSize = file.readBytes().size
-        val name = file.path.removePrefix("${indexFile.parentFile.parentFile.path}/")
+        val name = file.relativeTo(File(System.getProperty("user.dir"))).path
         val flags = 0x0000 + name.length
         val entrySize = 62 + name.length
         val padding = ((8 - ((entrySize) % 8)).coerceAtMost(8))
