@@ -31,8 +31,43 @@ fun updateIndex(path: String, option: String, sha1: String = "", cacheInfo: Stri
     }
 }
 
+/**
+ * @param treeHash the hash of the tree to be committed
+ * @param parentCommit the hash of the parent commit
+ * @param commitMessage the message of the commit
+ * @return the sha1 hash of the commit
+ */
+fun commitTree(treeHash: String, commitMessage: String, parentCommit: String = ""): String {
+    // validate the tree
+    if (!treeHash.objectExists()) {
+        throw Exception("The tree doesn't exist")
+    }
+    // validate the parent commit
+    if (parentCommit.isNotEmpty()) {
+        if (!parentCommit.objectExists()) {
+            throw Exception("parent commit doesn't exist")
+        }
+    }
+    val tree = "tree $treeHash\n"
+    val parent = if (parentCommit.isEmpty()) parentCommit else "parent $parentCommit\n"
+    val author =
+        "author user-name <user-email> ${System.currentTimeMillis() / 1000} +0200\n"
+    val committer =
+        "committer user-name <user-email> ${System.currentTimeMillis() / 1000} +0200\n"
+    val message = commitMessage.ifEmpty { throw Exception("commit message is empty") }
+    val content = tree + parent + author + committer + message
+    return hashObject(content, type = "commit", write = true)
+}
 
-data class TreeEntry(val mode: String, val name: String, val hash: String)
+fun String.objectPath(): String {
+    return "${System.getProperty("user.dir")}/.kit/objects/${this.substring(0, 2)}/${this.substring(2)}"
+}
+
+fun String.objectExists(): Boolean {
+    return File(this.objectPath()).exists()
+}
+
+data class TreeEntry(val mode: String, val path: String, val hash: String)
 
 /**
  * @param directory the directory to write the tree for
@@ -107,7 +142,7 @@ fun mkTree(entries: List<TreeEntry>, write: Boolean): String {
     var entriesContent: ByteArray = byteArrayOf()
     entries.forEach { entry ->
         val entryContent =
-            entry.mode.toByteArray() + " ".toByteArray() + entry.name.toByteArray() + "\u0000".toByteArray() + entry.hash.hexStringToByteArray()
+            entry.mode.toByteArray() + " ".toByteArray() + entry.path.toByteArray() + "\u0000".toByteArray() + entry.hash.hexStringToByteArray()
         entriesContent += entryContent
     }
     val prefix = "tree ${entriesContent.size}\u0000"
@@ -115,7 +150,7 @@ fun mkTree(entries: List<TreeEntry>, write: Boolean): String {
     val sha1 = sha1(content)
     if (write) {
         val workingDirectory = System.getProperty("user.dir")
-        val path = "${workingDirectory}/.kit/objects/${sha1.substring(0, 2)}/${sha1.substring(2)}"
+        val path = sha1.objectPath()
         val objectDatabase = File("${workingDirectory}/.kit/objects")
         if (!objectDatabase.exists()) {
             // print files in the current directory
@@ -146,14 +181,20 @@ fun lsFiles(): String {
  * @param write whether to write the hash to the object directory
  * @return the sha1 hash of the file
  */
-fun hashObject(path: String, write: Boolean = false): String {
-    // check if the file exists
-    if (!File(path).exists()) {
-        throw Exception("File does not exist")
-    }
+fun hashObject(path: String, type: String = "blob", write: Boolean = false): String {
     val workingDirectory = System.getProperty("user.dir")
     // read the file content
-    val content = File(path).readText()
+    val content = when (type) {
+        "blob" -> {
+            // check if the file exists
+            if (!File(path).exists()) {
+                throw Exception("File does not exist")
+            }
+            File(path).readText()
+        }
+
+        else -> path
+    }
     // encode the content
     val encoding = "UTF-8"
     val bytes = content.toByteArray(charset(encoding))
@@ -163,10 +204,10 @@ fun hashObject(path: String, write: Boolean = false): String {
      * It consists of the object type, a space, and the size of the content in bytes.
      * The header is followed by a NUL byte (0x00) and then the content.
      */
-    val prefix = "blob ${bytes.size}\u0000"
+    val prefix = "$type ${bytes.size}\u0000"
     val sha1 = sha1(prefix.toByteArray(charset(encoding)) + bytes)
     if (write) {
-        val objectPath = "${workingDirectory}/.kit/objects/${sha1.substring(0, 2)}/${sha1.substring(2)}"
+        val objectPath = sha1.objectPath()
         // make the directory if it doesn't exist
         val objectDatabase = File("${workingDirectory}/.kit/objects")
         if (!objectDatabase.exists()) {

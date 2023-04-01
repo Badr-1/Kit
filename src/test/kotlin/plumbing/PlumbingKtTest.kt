@@ -9,6 +9,7 @@ import plumbing.GitIndex.clearIndex
 import plumbing.GitIndex.refreshIndex
 import runCommand
 import java.io.File
+import kotlin.random.Random
 import kotlin.test.fail
 
 class PlumbingKtTest {
@@ -102,7 +103,7 @@ class PlumbingKtTest {
         file.createNewFile()
         file.writeText("Hello World")
         // hash the file
-        val kHash = hashObject(file.path, true)
+        val kHash = hashObject(file.path, write = true)
         // check if the file was written to the object database
         val objectFile =
             File("src/test/resources/workingDirectory/.kit/objects/${kHash.substring(0, 2)}/${kHash.substring(2)}")
@@ -125,7 +126,7 @@ class PlumbingKtTest {
         file.writeText("Hello World")
         // hash the file
         try {
-            hashObject(file.path, true)
+            hashObject(file.path, write = true)
         } catch (e: Exception) {
             assertEquals(
                 /* expected = */ "The repository doesn't exist",
@@ -153,7 +154,7 @@ class PlumbingKtTest {
         file.createNewFile()
         file.writeText("Hello World")
         // hash the file
-        val kHash = hashObject(file.path, true)
+        val kHash = hashObject(file.path, write = true)
         // hash the file using the command line
         val gHash = "git hash-object -w ${file.absolutePath}".runCommand()
         // NOTE: this affect the project repo due to the limitation that kotlin can't change the working directory
@@ -200,7 +201,7 @@ class PlumbingKtTest {
         file.createNewFile()
         file.writeText("Hello World")
         // update the index
-        updateIndex(file.path, "-a", hashObject(file.path, true), "100644")
+        updateIndex(file.path, "-a", hashObject(file.path, write = true), "100644")
 
         // check if the file was written to the index
         val indexFile = File("src/test/resources/workingDirectory/.kit/index")
@@ -237,12 +238,12 @@ class PlumbingKtTest {
         file.createNewFile()
         file.writeText("Hello World")
         // update the index
-        updateIndex(file.path, "-a", hashObject(file.path, true), "100644")
+        updateIndex(file.path, "-a", hashObject(file.path, write = true), "100644")
 
         // change file content
         file.writeText("Hello World (2)")
         // update the index
-        updateIndex(file.path, "-a", hashObject(file.path, true), "100644")
+        updateIndex(file.path, "-a", hashObject(file.path, write = true), "100644")
 
 
         // check if the file was written to the index
@@ -277,7 +278,7 @@ class PlumbingKtTest {
         file.createNewFile()
         file.writeText("Hello World")
         // update the index
-        updateIndex(file.path, "-a", hashObject(file.path, true), "100644")
+        updateIndex(file.path, "-a", hashObject(file.path, write = true), "100644")
 
         // check if the file was written to the index
         val indexFile = File("src/test/resources/workingDirectory/.kit/index")
@@ -319,8 +320,8 @@ class PlumbingKtTest {
         file.writeText("Hello World")
         file2.writeText("Hello World")
         // update the index
-        updateIndex(file.path, "-a", hashObject(file.path, true), "100644")
-        updateIndex(file2.path, "-a", hashObject(file2.path, true), "100644")
+        updateIndex(file.path, "-a", hashObject(file.path, write = true), "100644")
+        updateIndex(file2.path, "-a", hashObject(file2.path, write = true), "100644")
 
         // check if the file was written to the index
         val indexFile = File("src/test/resources/workingDirectory/.kit/index")
@@ -363,7 +364,7 @@ class PlumbingKtTest {
         file.createNewFile()
         file.writeText("Hello World")
         // update the index
-        updateIndex(file.path, "-a", hashObject(file.path, true), "100644")
+        updateIndex(file.path, "-a", hashObject(file.path, write = true), "100644")
 
         // check if the file was written to the index
         refreshIndex() // this is a refresh of the index
@@ -399,7 +400,7 @@ class PlumbingKtTest {
         file.createNewFile()
         file.writeText("Hello World")
         // update the index
-        val output = updateIndex(file.path, "-w", hashObject(file.path, true), "100644")
+        val output = updateIndex(file.path, "-w", hashObject(file.path, write = true), "100644")
 
         assertEquals("usage: update-index <path> (-a|-d) <sha1> <cacheInfo>", output)
     }
@@ -435,7 +436,7 @@ class PlumbingKtTest {
         assertEquals("", output)
 
         // update the index
-        updateIndex(file.path, "-a", hashObject(file.path, true), "100644")
+        updateIndex(file.path, "-a", hashObject(file.path, write = true), "100644")
 
         // list files
         val output2 = lsFiles()
@@ -474,7 +475,7 @@ class PlumbingKtTest {
         file.createNewFile()
         file.writeText("Hello World")
         // update the index
-        updateIndex(file.path, "-a", hashObject(file.path, true), "100644")
+        updateIndex(file.path, "-a", hashObject(file.path, write = true), "100644")
         try {
             // write tree
             writeTree("nonExistingDirectory")
@@ -547,9 +548,9 @@ class PlumbingKtTest {
         file.createNewFile()
         file.writeText("Hello World")
         // update the index
-        var sha1 = hashObject(file.path, true)
+        var sha1 = hashObject(file.path, write = true)
         assertEquals("5e1c309dae7f45e0f39b1bf3ac3cd9db12e7d689", sha1) //
-        updateIndex(file.path, "-a", hashObject(file.path, true), "100644")
+        updateIndex(file.path, "-a", hashObject(file.path, write = true), "100644")
         // write tree
         sha1 = writeTree("src/test/resources/workingDirectory", false)
 
@@ -585,9 +586,9 @@ class PlumbingKtTest {
         file.createNewFile()
         file.writeText("Hello World")
         // update the index
-        var sha1 = hashObject(file.path, true)
+        var sha1 = hashObject(file.path, write = true)
         assertEquals("5e1c309dae7f45e0f39b1bf3ac3cd9db12e7d689", sha1) //
-        updateIndex(file.path, "-a", hashObject(file.path, true), "100644")
+        updateIndex(file.path, "-a", hashObject(file.path, write = true), "100644")
         // write tree
         sha1 = writeTree("src/test/resources/workingDirectory", true)
 
@@ -629,7 +630,7 @@ class PlumbingKtTest {
             val head = File("src/test/resources/workingDirectory/.kit/HEAD")
             head.createNewFile()
             head.writeText("ref: refs/heads/master")
-            updateIndex(file.path, "-a", hashObject(file.path, true), "100644")
+            updateIndex(file.path, "-a", hashObject(file.path, write = true), "100644")
             objectDatabase.deleteRecursively() // to simulate the object database doesn't exist
             writeTree("src/test/resources/workingDirectory", true)
         } catch (e: Exception) {
@@ -640,7 +641,6 @@ class PlumbingKtTest {
             )
         }
     }
-
 
 
     @Test
@@ -670,7 +670,7 @@ class PlumbingKtTest {
         file2.createNewFile()
         file2.writeText("Hello World 2")
         // update the index
-        updateIndex(file.path, "-a", hashObject(file.path, true), "100644")
+        updateIndex(file.path, "-a", hashObject(file.path, write = true), "100644")
         // ignore file2
         // write tree
         val sha1 = writeTree("src/test/resources/workingDirectory", true)
@@ -707,10 +707,172 @@ class PlumbingKtTest {
         file.createNewFile()
         file.writeText("Hello World")
         // update the index
-        updateIndex(file.path, "-a", hashObject(file.path, true), "100644")
+        updateIndex(file.path, "-a", hashObject(file.path, write = true), "100644")
         // ignore file2
         // write tree
         val sha1 = writeTree("src/test/resources/workingDirectory", true)
         assertEquals("7c3ab9742549cc307a65f3c20b9aa488507a10da", sha1) // this sha1 is generated by git
+    }
+
+    @Test
+    fun `commit-tree invalid tree`() {
+        // create a working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        // create object database
+        val objectDatabase = File("src/test/resources/workingDirectory/.kit/objects")
+        objectDatabase.mkdirs()
+        // create refs and refs/heads
+        val refs = File("src/test/resources/workingDirectory/.kit/refs")
+        refs.mkdirs()
+        val heads = File("src/test/resources/workingDirectory/.kit/refs/heads")
+        heads.mkdirs()
+        // create HEAD file
+        val head = File("src/test/resources/workingDirectory/.kit/HEAD")
+        head.createNewFile()
+        head.writeText("ref: refs/heads/master")
+        // create a file with the content "Hello World"
+        val file = File("src/test/resources/workingDirectory/test.txt")
+        file.createNewFile()
+        file.writeText("Hello World")
+        val randomSha1 = Random.nextBytes(20).joinToString { "%02x".format(it) }
+
+        try {
+            commitTree(randomSha1, "master")
+            fail("The commit-tree should fail because the tree doesn't exist")
+        } catch (e: Exception) {
+            assertEquals(
+                /* expected = */ "The tree doesn't exist",
+                /* actual = */ e.message,
+                /* message = */ "The exception message should be 'The tree doesn't exist'"
+            )
+        }
+    }
+
+    @Test
+    fun `commit-tree invalid parent`() {
+        // create a working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        // create object database
+        val objectDatabase = File("src/test/resources/workingDirectory/.kit/objects")
+        objectDatabase.mkdirs()
+        // create refs and refs/heads
+        val refs = File("src/test/resources/workingDirectory/.kit/refs")
+        refs.mkdirs()
+        val heads = File("src/test/resources/workingDirectory/.kit/refs/heads")
+        heads.mkdirs()
+        // create HEAD file
+        val head = File("src/test/resources/workingDirectory/.kit/HEAD")
+        head.createNewFile()
+        head.writeText("ref: refs/heads/master")
+        // create a file with the content "Hello World"
+        val file = File("src/test/resources/workingDirectory/test.txt")
+        file.createNewFile()
+        file.writeText("Hello World")
+        // update the index
+        updateIndex(file.path, "-a", hashObject(file.path, write = true), "100644")
+        // write tree
+        val sha1 = writeTree("src/test/resources/workingDirectory", true)
+        val randomSha1 = Random.nextBytes(20).joinToString { "%02x".format(it) }
+
+        try {
+            commitTree(sha1, "init", randomSha1)
+            fail("The commit-tree should fail because the tree doesn't exist")
+        } catch (e: Exception) {
+            assertEquals(
+                /* expected = */ "parent commit doesn't exist",
+                /* actual = */ e.message,
+                /* message = */ "The exception message should be 'The tree doesn't exist'"
+            )
+            // clean up
+            clearIndex()
+        }
+    }
+
+    @Test
+    fun `commit-tree valid commit`() {
+        // create a working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        // create object database
+        val objectDatabase = File("src/test/resources/workingDirectory/.kit/objects")
+        objectDatabase.mkdirs()
+        // create refs and refs/heads
+        val refs = File("src/test/resources/workingDirectory/.kit/refs")
+        refs.mkdirs()
+        val heads = File("src/test/resources/workingDirectory/.kit/refs/heads")
+        heads.mkdirs()
+        // create HEAD file
+        val head = File("src/test/resources/workingDirectory/.kit/HEAD")
+        head.createNewFile()
+        head.writeText("ref: refs/heads/master")
+        // create a file
+        val file = File("src/test/resources/workingDirectory/test.txt")
+        file.createNewFile()
+        file.writeText("Hello World")
+        // update the index
+        updateIndex(file.path, "-a", hashObject(file.path, write = true), "100644")
+        // write tree
+        val tree = writeTree("src/test/resources/workingDirectory", true)
+        // commit tree
+        val commit = commitTree(tree, "test commit")
+        assert(commit.objectExists())
+        // due to the fact that the commit hash always changes, we can't check the hash
+        // we check the content of the commit
+        val commitContent =
+            Zlib.inflate(File(commit.objectPath()).readBytes()).toString(Charsets.UTF_8).substringAfter("\u0000")
+        assertEquals("tree $tree", commitContent.split("\n")[0])
+        assertEquals("test commit", commitContent.split("\n")[3])
+
+        // clean up
+        clearIndex()
+    }
+
+    @Test
+    fun `commit-tree valid commit with parent`() {
+        // create a working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        // create object database
+        val objectDatabase = File("src/test/resources/workingDirectory/.kit/objects")
+        objectDatabase.mkdirs()
+        // create refs and refs/heads
+        val refs = File("src/test/resources/workingDirectory/.kit/refs")
+        refs.mkdirs()
+        val heads = File("src/test/resources/workingDirectory/.kit/refs/heads")
+        heads.mkdirs()
+        // create HEAD file
+        val head = File("src/test/resources/workingDirectory/.kit/HEAD")
+        head.createNewFile()
+        head.writeText("ref: refs/heads/master")
+        // create a file
+        val file = File("src/test/resources/workingDirectory/test.txt")
+        file.createNewFile()
+        file.writeText("Hello World")
+        // update the index
+        updateIndex(file.path, "-a", hashObject(file.path, write = true), "100644")
+        // write tree
+        val tree = writeTree("src/test/resources/workingDirectory", true)
+        // commit tree
+        val commit = commitTree(tree, "test commit")
+        assert(commit.objectExists())
+        // change the file
+        file.writeText("Hello World 2")
+        // update the index
+        updateIndex(file.path, "-a", hashObject(file.path, write = true), "100644")
+        // write tree
+        val tree2 = writeTree("src/test/resources/workingDirectory", true)
+        // commit tree
+        val commit2 = commitTree(tree2, "test commit 2", commit)
+        assert(commit2.objectExists())
     }
 }
