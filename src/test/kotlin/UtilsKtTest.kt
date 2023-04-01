@@ -24,7 +24,7 @@ class UtilsKtTest {
     fun runCommandFail() {
         val command = "ls -l /non/existing/path"
         try {
-            val output = command.runCommand()
+            command.runCommand()
             fail("The command should fail")
         } catch (e: RuntimeException) {
             assertEquals(
