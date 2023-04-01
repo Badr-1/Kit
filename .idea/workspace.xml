@@ -5,11 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d3a3764e-6671-45a4-a6f3-11e9b2af232f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/plumbing/GitIndex.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/Utils.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/Utils.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/plumbing/plumbing.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/plumbing/plumbing.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/kotlin/UtilsKtTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/UtilsKtTest.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/kotlin/plumbing/PlumbingKtTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/plumbing/PlumbingKtTest.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -52,7 +51,6 @@
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
-    <option name="showMembers" value="true" />
     <option name="showVisibilityIcons" value="true" />
     <option name="sortByType" value="true" />
   </component>
@@ -73,6 +71,9 @@
       <recent name="" />
     </key>
     <key name="CreateTestDialog.RecentsKey">
+      <recent name="plumbing" />
+    </key>
+    <key name="CopyKotlinDeclarationDialog.RECENTS_KEY">
       <recent name="plumbing" />
     </key>
   </component>
@@ -101,7 +102,7 @@
       <ForceTestExec>true</ForceTestExec>
       <method v="2" />
     </configuration>
-    <configuration name="PlumbingKtTest.hashObject file and write to object database and compare its content with git object" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="PlumbingKtTest.loadIndex file" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -114,7 +115,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;plumbing.PlumbingKtTest.hashObject file and write to object database and compare its content with git object&quot;" />
+            <option value="&quot;plumbing.PlumbingKtTest.loadIndex file&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -125,7 +126,7 @@
       <ForceTestExec>true</ForceTestExec>
       <method v="2" />
     </configuration>
-    <configuration name="PlumbingKtTest.hashObject file and write to object database and match git functionality" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="PlumbingKtTest.updateIndex add file that was already added after change" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -138,7 +139,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;plumbing.PlumbingKtTest.hashObject file and write to object database and match git functionality&quot;" />
+            <option value="&quot;plumbing.PlumbingKtTest.updateIndex add file that was already added after change&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -149,7 +150,7 @@
       <ForceTestExec>true</ForceTestExec>
       <method v="2" />
     </configuration>
-    <configuration name="UtilsKtTest.runCommand" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="PlumbingKtTest.updateIndex remove file leave the rest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -162,7 +163,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;UtilsKtTest.runCommand&quot;" />
+            <option value="&quot;plumbing.PlumbingKtTest.updateIndex remove file leave the rest&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -173,7 +174,7 @@
       <ForceTestExec>true</ForceTestExec>
       <method v="2" />
     </configuration>
-    <configuration name="UtilsKtTest.runCommandFail" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="Tests in 'Git-A-Home-Made-Recipe-With-Kotlin.test'" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -185,8 +186,6 @@
         <option name="taskNames">
           <list>
             <option value=":test" />
-            <option value="--tests" />
-            <option value="&quot;UtilsKtTest.runCommandFail&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -200,10 +199,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Gradle.PlumbingKtTest" />
-        <item itemvalue="Gradle.UtilsKtTest.runCommandFail" />
-        <item itemvalue="Gradle.UtilsKtTest.runCommand" />
-        <item itemvalue="Gradle.PlumbingKtTest.hashObject file and write to object database and match git functionality" />
-        <item itemvalue="Gradle.PlumbingKtTest.hashObject file and write to object database and compare its content with git object" />
+        <item itemvalue="Gradle.Tests in 'Git-A-Home-Made-Recipe-With-Kotlin.test'" />
+        <item itemvalue="Gradle.PlumbingKtTest.loadIndex file" />
+        <item itemvalue="Gradle.PlumbingKtTest.updateIndex add file that was already added after change" />
+        <item itemvalue="Gradle.PlumbingKtTest.updateIndex remove file leave the rest" />
       </list>
     </recent_temporary>
   </component>
@@ -223,16 +222,17 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="kotlin-line">
           <url>file://$PROJECT_DIR$/src/test/kotlin/plumbing/PlumbingKtTest.kt</url>
-          <line>150</line>
-          <option name="timeStamp" value="15" />
+          <line>214</line>
+          <option name="timeStamp" value="23" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/Git_A_Home_Made_Recipe_With_Kotlin$PlumbingKtTest_updateIndex_remove_file_leave_the_rest.ic" NAME="PlumbingKtTest.updateIndex remove file leave the rest Coverage Results" MODIFIED="1680315159948" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/Git_A_Home_Made_Recipe_With_Kotlin$UtilsKtTest.ic" NAME="UtilsKtTest Coverage Results" MODIFIED="1680307152881" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
-    <SUITE FILE_PATH="coverage/Git_A_Home_Made_Recipe_With_Kotlin$Tests_in__Git_A_Home_Made_Recipe_With_Kotlin_test_.ic" NAME="Tests in 'Git-A-Home-Made-Recipe-With-Kotlin.test' Coverage Results" MODIFIED="1680308434797" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/Git_A_Home_Made_Recipe_With_Kotlin$Tests_in__Git_A_Home_Made_Recipe_With_Kotlin_test_.ic" NAME="Tests in 'Git-A-Home-Made-Recipe-With-Kotlin.test' Coverage Results" MODIFIED="1680316954924" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/Git_A_Home_Made_Recipe_With_Kotlin$UtilsKtTest_runCommandFail.ic" NAME="UtilsKtTest.runCommandFail Coverage Results" MODIFIED="1680306204563" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
-    <SUITE FILE_PATH="coverage/Git_A_Home_Made_Recipe_With_Kotlin$PlumbingKtTest.ic" NAME="PlumbingKtTest Coverage Results" MODIFIED="1680307175835" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/Git_A_Home_Made_Recipe_With_Kotlin$PlumbingKtTest.ic" NAME="PlumbingKtTest Coverage Results" MODIFIED="1680317046737" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
   </component>
 </project>

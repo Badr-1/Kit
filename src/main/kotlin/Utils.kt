@@ -18,3 +18,19 @@ fun String.runCommand(): String {
         throw RuntimeException("Command '$this' failed")
     }
 }
+
+/**
+ * convert a hex string to a byte array
+ */
+fun String.hexStringToByteArray(): ByteArray {
+    val len = length
+    require(len % 2 == 0) { "Hex string must have even number of characters" }
+    val byteArray = ByteArray(len / 2)
+    var i = 0
+    while (i < len) {
+        byteArray[i / 2] = ((Character.digit(get(i), 16) shl 4)
+                + Character.digit(get(i + 1), 16)).toByte()
+        i += 2
+    }
+    return byteArray
+}

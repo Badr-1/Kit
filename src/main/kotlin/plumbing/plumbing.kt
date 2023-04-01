@@ -5,6 +5,30 @@ import java.security.MessageDigest
 
 
 /**
+ * @param path the path of the file to be added to the tree
+ * @param option the option to use (either -a or -d)
+ * @return success message
+ */
+fun updateIndex(path: String, option: String, sha1: String = "", cacheInfo: String = ""): String {
+    return when {
+        option == "-d" -> {
+            GitIndex.remove(File(path))
+            "Removed $path from index"
+        }
+
+        option == "-a" && cacheInfo.isNotEmpty() -> {
+            GitIndex.add(File(path), sha1, cacheInfo)
+            "Added $path to index"
+        }
+
+        else -> {
+            "usage: update-index <path> (-a|-d) <sha1> <cacheInfo>"
+        }
+    }
+}
+
+
+/**
  * Hashes the given file content using sha1
  * @param path the file path
  * @param write whether to write the hash to the object directory
