@@ -71,4 +71,46 @@ fun unstage(filePath: String) {
     }
     updateIndex(filePath, "-d")
 }
+
+// TODO this should be updated when the commit command is implemented
+fun status(): String {
+    // get all the files in the working directory except the .kit directory
+    val workingDirectoryFiles = File(System.getProperty("user.dir")).walk()
+        .filter { it.isFile && !it.path.contains(".kit") }.toList().map { it.relativePath() }
+
+    // get all the files in the index
+    val indexFiles = GitIndex.entries().map { it.path }
+
+    // untracked files are the files that are in the working directory but not in the index
+    val untrackedFiles = workingDirectoryFiles.filter { !indexFiles.contains(it) }
+
+    // modified files are the files that are in the index but has different hash from the working directory
+    val modifiedFiles = indexFiles.filter {
+        workingDirectoryFiles.contains(it) && GitIndex.get(it)!!.sha1 != hashObject("${System.getProperty("user.dir")}/$it")
     }
+    // deleted files are the files that are in the index but not in the working directory
+    val deletedFiles = indexFiles.filter { !workingDirectoryFiles.contains(it) }
+
+    // added files
+    val addedFiles = indexFiles.filter { !deletedFiles.contains(it) && !modifiedFiles.contains(it) }
+
+    return """
+        On branch master
+        
+        Untracked files:
+        ${untrackedFiles.sorted().joinToString("\n\t\t") { "?? $it".red() }}
+        
+        Changes to be committed :
+        ${addedFiles.sorted().joinToString("\n\t\t") { "A $it".green() }}
+        Changes not staged for commit:
+        ${modifiedFiles.sorted().joinToString("\n\t\t") { "M $it".yellow() }}
+        ${deletedFiles.sorted().joinToString("\n\t\t") { "D $it".yellow() }}
+
+        """
+}
+
+fun File.relativePath(): String = this.relativeTo(File(System.getProperty("user.dir"))).path
+
+fun String.red() = "\u001B[31m$this\u001B[0m"
+fun String.green() = "\u001B[32m$this\u001B[0m"
+fun String.yellow() = "\u001B[33m$this\u001B[0m"

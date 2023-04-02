@@ -223,6 +223,10 @@ object GitIndex {
         return entries.firstOrNull { it.path == path }
     }
 
+    fun entries(): List<GitIndexEntry> {
+        return entries.subList(0, entries.size)
+    }
+
     private fun makeEntry(file: File, sha1: String, cacheInfo: String): GitIndexEntry {
         val attr = Files.readAttributes(file.toPath(), "unix:*")
         val creationTime = Instant.parse("${attr["creationTime"]!!}").epochSecond
