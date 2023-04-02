@@ -2,6 +2,7 @@ package porcelain
 
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -248,17 +249,77 @@ class PorcelainKtTest {
             ), status()
         )
 
-
     }
-}
 
-fun statusString(
-    untrackedFiles: List<String>,
-    addedFiles: List<String>,
-    modifiedFiles: List<String>,
-    deletedFiles: List<String>
-): String {
-    return """
+    @Test
+    fun `commit on master`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // create a file
+        val filePath = "${workingDirectory.path}/test.txt"
+        File(filePath).writeText("test text")
+        add(filePath)
+        val commitHash = commit("test commit")
+        // this should create a file in the .kit/refs/heads named master
+        assertTrue(File("$workingDirectory/.kit/refs/heads/master").exists())
+        assertEquals(commitHash, File("$workingDirectory/.kit/refs/heads/master").readText())
+    }
+
+    @Test
+    fun `commit twice`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // create a file
+        val filePath = "${workingDirectory.path}/test.txt"
+        File(filePath).writeText("test text")
+        add(filePath)
+        commit("test commit")
+        File(filePath).writeText("test text 2")
+        add(filePath)
+        val commitHash2 = commit("test commit 2")
+        assertEquals(commitHash2, File("$workingDirectory/.kit/refs/heads/master").readText())
+    }
+
+    @Test
+    fun `commit when HEAD is at Detached state`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // create a file
+        val filePath = "${workingDirectory.path}/test.txt"
+        File(filePath).writeText("test text")
+        add(filePath)
+        val commitHash = commit("test commit")
+        // checkout to the commit
+        File("$workingDirectory/.kit/HEAD").writeText(commitHash)
+        File(filePath).writeText("test text 2")
+        add(filePath)
+        val commitHash2 = commit("test commit 2")
+
+        assertEquals(commitHash2, File("$workingDirectory/.kit/HEAD").readText())
+    }
+
+    private fun statusString(
+        untrackedFiles: List<String>,
+        addedFiles: List<String>,
+        modifiedFiles: List<String>,
+        deletedFiles: List<String>
+    ): String {
+        return """
         On branch master
         
         Untracked files:
@@ -271,4 +332,5 @@ fun statusString(
         ${deletedFiles.sorted().joinToString("\n\t\t") { "D $it".yellow() }}
 
         """
+    }
 }

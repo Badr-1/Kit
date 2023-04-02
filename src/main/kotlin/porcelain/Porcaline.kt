@@ -1,8 +1,6 @@
 package porcelain
 
-import plumbing.GitIndex
-import plumbing.hashObject
-import plumbing.updateIndex
+import plumbing.*
 import java.io.File
 import java.nio.file.Files
 import kotlin.io.path.Path
@@ -107,6 +105,33 @@ fun status(): String {
         ${deletedFiles.sorted().joinToString("\n\t\t") { "D $it".yellow() }}
 
         """
+}
+
+// TODO think about adding amend option
+fun commit(message: String): String {
+    val head = File("${System.getProperty("user.dir")}/.kit/HEAD").readText()
+    val parent = when {
+        head.contains("ref: refs/heads/") -> {
+            val branch = File(System.getProperty("user.dir") + "/.kit/" + head.split(" ")[1])
+            if (branch.exists()) {
+                branch.readText()
+            } else {
+                ""
+            }
+        }
+
+        else -> head // commit hash
+    }
+    val treeHash = writeTree(System.getProperty("user.dir"), write = true)
+    val commitHash = commitTree(treeHash, message, parent)
+    if (head.contains("ref: refs/heads/")) {
+        val branch = File(System.getProperty("user.dir") + "/.kit/" + head.split(" ")[1])
+        branch.createNewFile()
+        branch.writeText(commitHash)
+    } else {
+        File("${System.getProperty("user.dir")}/.kit/HEAD").writeText(commitHash)
+    }
+    return commitHash
 }
 
 fun File.relativePath(): String = this.relativeTo(File(System.getProperty("user.dir"))).path
