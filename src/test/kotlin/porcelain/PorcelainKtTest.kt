@@ -4,6 +4,8 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import plumbing.GitIndex
 import java.io.File
 
 class PorcelainKtTest {
@@ -70,5 +72,68 @@ class PorcelainKtTest {
             "Reinitialized existing Kit repository in ${File("${workingDirectory}/$repositoryName/.kit").absolutePath}",
             init(repositoryName)
         )
+    }
+
+    @Test
+    fun `add non-existent file`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        val filePath = "src/test/resources/workingDirectory/non-existent-file"
+        val exception = assertThrows<Exception> {
+            add(filePath)
+        }
+        assertEquals("fatal: pathspec '$filePath' did not match any files", exception.message)
+    }
+
+    @Test
+    fun `add a file outside the repo`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        val filePath = "${workingDirectory.parent}/test.txt"
+        File(filePath).writeText("test text")
+        val exception = assertThrows<Exception> {
+            add(filePath)
+        }
+        assertEquals("fatal: pathspec '$filePath' is outside repository", exception.message)
+    }
+
+    @Test
+    fun `add file inside the kit directory`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        val filePath = "${workingDirectory.path}/.kit/test.txt"
+        File(filePath).writeText("test text")
+
+        assertEquals(0, GitIndex.getEntryCount())
+    }
+
+    @Test
+    fun `add a file`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        val filePath = "${workingDirectory.path}/test.txt"
+        File(filePath).writeText("test text")
+
+        assertEquals(0, GitIndex.getEntryCount())
+        add(filePath)
+        assertEquals(1, GitIndex.getEntryCount())
+        // clean up
+        GitIndex.clearIndex()
     }
 }

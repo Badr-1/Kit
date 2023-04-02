@@ -1,6 +1,10 @@
 package porcelain
 
+import plumbing.hashObject
+import plumbing.updateIndex
 import java.io.File
+import java.nio.file.Files
+import kotlin.io.path.Path
 
 
 fun init(repositoryName: String = ""): String {
@@ -27,4 +31,30 @@ fun init(repositoryName: String = ""): String {
     File("${path}.kit/config").writeText("[core]\n\trepositoryformatversion = 0\n\tfilemode = true\n\tbare = false\n\tlogallrefupdates = true\n")
 
     return "Initialized empty Kit repository in ${File("${path}.kit").absolutePath}"
+}
+
+fun add(filePath: String) {
+    // check if the file exists
+    if (!File(filePath).exists()) {
+        throw Exception("fatal: pathspec '$filePath' did not match any files")
+    }
+    // check if the file is in the working directory
+    if (!File(filePath).absolutePath.startsWith(File(System.getProperty("user.dir")).absolutePath)) {
+        throw Exception("fatal: pathspec '$filePath' is outside repository")
+    }
+    // check if the file is in the .kit directory
+    if (File(filePath).absolutePath.startsWith(File("${System.getProperty("user.dir")}/.kit").absolutePath)) {
+        return
+    }
+    val file = File(filePath)
+    // update the index
+    val mode = when {
+        // check if the file is executable
+        file.canExecute() -> "100755"
+        // check if the file is a symlink
+        Files.isSymbolicLink(Path(file.path)) -> "120000"
+        // then it's a normal file
+        else -> "100644"
+    }
+    updateIndex(filePath, "-a", hashObject(filePath, write = true), mode)
 }
