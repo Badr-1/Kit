@@ -108,13 +108,13 @@ class PorcelainKtTest {
 
     @Test
     fun `add file inside the kit directory`() {
-        GitIndex.clearIndex()
         // create working directory
         val workingDirectory = File("src/test/resources/workingDirectory")
         workingDirectory.mkdir()
         // set the working directory
         System.setProperty("user.dir", workingDirectory.path)
         init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         val filePath = "${workingDirectory.path}/.kit/test.txt"
         File(filePath).writeText("test text")
 
@@ -123,21 +123,19 @@ class PorcelainKtTest {
 
     @Test
     fun `add a file`() {
-        GitIndex.clearIndex()
         // create working directory
         val workingDirectory = File("src/test/resources/workingDirectory")
         workingDirectory.mkdir()
         // set the working directory
         System.setProperty("user.dir", workingDirectory.path)
         init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         val filePath = "${workingDirectory.path}/test.txt"
         File(filePath).writeText("test text")
 
         assertEquals(0, GitIndex.getEntryCount())
         add(filePath)
         assertEquals(1, GitIndex.getEntryCount())
-        // clean up
-        GitIndex.clearIndex()
     }
 
     @Test
@@ -192,13 +190,13 @@ class PorcelainKtTest {
 
     @Test
     fun `remove a file from index`() {
-        GitIndex.clearIndex()
         // create working directory
         val workingDirectory = File("src/test/resources/workingDirectory")
         workingDirectory.mkdir()
         // set the working directory
         System.setProperty("user.dir", workingDirectory.path)
         init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         val filePath = "${workingDirectory.path}/test.txt"
         File(filePath).writeText("test text")
         add(filePath)
