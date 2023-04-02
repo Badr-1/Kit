@@ -103,10 +103,12 @@ class PorcelainKtTest {
             add(filePath)
         }
         assertEquals("fatal: pathspec '$filePath' is outside repository", exception.message)
+        File(filePath).delete()
     }
 
     @Test
     fun `add file inside the kit directory`() {
+        GitIndex.clearIndex()
         // create working directory
         val workingDirectory = File("src/test/resources/workingDirectory")
         workingDirectory.mkdir()
@@ -121,6 +123,7 @@ class PorcelainKtTest {
 
     @Test
     fun `add a file`() {
+        GitIndex.clearIndex()
         // create working directory
         val workingDirectory = File("src/test/resources/workingDirectory")
         workingDirectory.mkdir()
@@ -135,5 +138,72 @@ class PorcelainKtTest {
         assertEquals(1, GitIndex.getEntryCount())
         // clean up
         GitIndex.clearIndex()
+    }
+
+    @Test
+    fun `remove a file that's not in the index`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        val filePath = "${workingDirectory.path}/test.txt"
+        File(filePath).writeText("test text")
+        val exception = assertThrows<Exception> {
+            unstage(filePath)
+        }
+        assertEquals("fatal: pathspec '$filePath' did not match any files", exception.message)
+    }
+
+    @Test
+    fun `remove a file that's outside the repo`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        val filePath = "${workingDirectory.parent}/test.txt"
+        File(filePath).writeText("test text")
+        val exception = assertThrows<Exception> {
+            unstage(filePath)
+        }
+        assertEquals("fatal: pathspec '$filePath' is outside repository", exception.message)
+        File(filePath).delete()
+    }
+
+    @Test
+    fun `remove a file inside the kit directory`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        val filePath = "${workingDirectory.path}/.kit/test.txt"
+        File(filePath).writeText("test text")
+        val exception = assertThrows<Exception> {
+            unstage(filePath)
+        }
+        assertEquals("fatal: pathspec '$filePath' did not match any files", exception.message)
+        File(filePath).delete()
+    }
+
+    @Test
+    fun `remove a file from index`() {
+        GitIndex.clearIndex()
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        val filePath = "${workingDirectory.path}/test.txt"
+        File(filePath).writeText("test text")
+        add(filePath)
+        assertEquals(1, GitIndex.getEntryCount())
+        unstage(filePath)
+        assertEquals(0, GitIndex.getEntryCount())
     }
 }

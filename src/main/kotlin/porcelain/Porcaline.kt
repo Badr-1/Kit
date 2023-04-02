@@ -1,5 +1,6 @@
 package porcelain
 
+import plumbing.GitIndex
 import plumbing.hashObject
 import plumbing.updateIndex
 import java.io.File
@@ -57,4 +58,26 @@ fun add(filePath: String) {
         else -> "100644"
     }
     updateIndex(filePath, "-a", hashObject(filePath, write = true), mode)
+}
+
+fun unstage(filePath: String) {
+    // check if the file is in the working directory
+    if (!File(filePath).absolutePath.startsWith(File(System.getProperty("user.dir")).absolutePath)) {
+        throw Exception("fatal: pathspec '$filePath' is outside repository")
+    }
+    // check if the file exists or is in the index
+    if ((!File(filePath).exists()) || GitIndex.get(File(filePath).relativeTo(File(System.getProperty("user.dir"))).path) == null) {
+        throw Exception("fatal: pathspec '$filePath' did not match any files")
+    }
+    val file = File(filePath)
+    // update the index
+    val mode = when {
+        // check if the file is executable
+        file.canExecute() -> "100755"
+        // check if the file is a symlink
+        Files.isSymbolicLink(Path(file.path)) -> "120000"
+        // then it's a normal file
+        else -> "100644"
+    }
+    updateIndex(filePath, "-d", hashObject(filePath, write = true), mode)
 }
