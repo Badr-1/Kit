@@ -313,6 +313,119 @@ class PorcelainKtTest {
         assertEquals(commitHash2, File("$workingDirectory/.kit/HEAD").readText())
     }
 
+    @Test
+    fun `checkout non-existent branch`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // create a file
+        val filePath = "${workingDirectory.path}/test.txt"
+        File(filePath).writeText("test text")
+        add(filePath)
+        commit("test commit")
+        val exception = assertThrows<Exception> {
+            checkout("test")
+        }
+        assertEquals("error: pathspec 'test' did not match any file(s) known to kit", exception.message)
+    }
+
+    @Test
+    fun `checkout a commit`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // create a file
+        val filePath = "${workingDirectory.path}/test.txt"
+        File(filePath).writeText("test text")
+        add(filePath)
+        val commitHash = commit("test commit")
+        File(filePath).writeText("test text 2")
+        add(filePath)
+        commit("test commit 2")
+        checkout(commitHash)
+        assertEquals(commitHash, File("$workingDirectory/.kit/HEAD").readText())
+        // the content of the file should be the same as the checkout commit
+        assertEquals("test text", File(filePath).readText())
+    }
+
+    @Test
+    fun `checkout a branch`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // create a file
+        val filePath = "${workingDirectory.path}/test.txt"
+        File(filePath).writeText("test text")
+        add(filePath)
+        commit("test commit")
+        File(filePath).writeText("test text 2")
+        add(filePath)
+        val commitHash = commit("test commit 2")
+        checkout("master")
+        assertEquals(commitHash, File("$workingDirectory/.kit/refs/heads/master").readText())
+    }
+
+    @Test
+    fun `checkout an executable file`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // create a file
+        val filePath = "${workingDirectory.path}/test.sh"
+        File(filePath).writeText("echo test")
+        File(filePath).setExecutable(true)
+        add(filePath)
+        val commitHash = commit("test commit")
+        File(filePath).setExecutable(false)
+        add(filePath)
+        commit("test commit 2")
+        checkout(commitHash)
+        assertEquals(commitHash, File("$workingDirectory/.kit/HEAD").readText())
+        // the content of the file should be the same as the checkout commit
+        assertEquals("echo test", File(filePath).readText())
+        assertTrue(File(filePath).canExecute())
+    }
+
+    @Test
+    fun `checkout a directory`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // create a file
+        val filePath = "${workingDirectory.path}/test/test.txt"
+        File(filePath).parentFile.mkdirs()
+        File(filePath).writeText("test text")
+        add(filePath)
+        val commitHash = commit("test commit")
+        File(filePath).writeText("test text 2")
+        add(filePath)
+        commit("test commit 2")
+        checkout(commitHash)
+        assertEquals(commitHash, File("$workingDirectory/.kit/HEAD").readText())
+        // the content of the file should be the same as the checkout commit
+        assertEquals("test text", File(filePath).readText())
+    }
+
     private fun statusString(
         untrackedFiles: List<String>,
         addedFiles: List<String>,

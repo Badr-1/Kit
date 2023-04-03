@@ -134,6 +134,66 @@ fun commit(message: String): String {
     return commitHash
 }
 
+fun checkout(ref: String) {
+    // ref could be a commit hash or a branch name
+    val commitHash = when {
+        // TODO think about supporting working with commit hashes less than 40 characters (short commit hashes)
+        // TODO think about checking out files
+        ref.matches(Regex("[0-9a-f]{40}")) -> ref
+        else -> {
+            val branch = File("${System.getProperty("user.dir")}/.kit/refs/heads/$ref")
+            if (!branch.exists()) {
+                throw Exception("error: pathspec '$ref' did not match any file(s) known to kit")
+            }
+            branch.readText()
+        }
+    }
+    // change the HEAD
+    File("${System.getProperty("user.dir")}/.kit/HEAD").writeText(commitHash)
+    updateWorkingDirectory(commitHash)
+}
+
+fun updateWorkingDirectory(commitHash: String) {
+    // get the tree hash from the commit
+    val treeHash = getTreeHash(commitHash)
+    val treeEntries = getTreeEntries(treeHash)
+    treeEntries.forEach {
+        val file = File("${System.getProperty("user.dir")}/${it.path}")
+        if (it.mode == "100755") {
+            file.setExecutable(true)
+        }
+        file.createNewFile()
+        file.writeText(catFile(it.hash, "-p"))
+    }
+}
+
+fun getTreeHash(commitHash: String): String {
+    val content = catFile(commitHash, "-p")
+    return content.split("\n")[0].split(" ")[1]
+}
+
+fun getTreeEntries(treeHash: String): List<TreeEntry> {
+    val content = catFile(treeHash, "-p")
+    val treeEntries = mutableListOf<TreeEntry>()
+    content.split("\n").map {
+        val mode = it.split(" ")[0]
+        val sha1 = it.split(" ")[2].split("\t")[0]
+        val path = it.split("\t")[1]
+        if (mode == "40000") {
+            treeEntries.addAll(getTreeEntries(sha1).map { treeEntry ->
+                TreeEntry(
+                    treeEntry.mode,
+                    "$path/${treeEntry.path}",
+                    treeEntry.hash
+                )
+            })
+        } else {
+            treeEntries.add(TreeEntry(mode, path, sha1))
+        }
+    }
+    return treeEntries
+}
+
 fun File.relativePath(): String = this.relativeTo(File(System.getProperty("user.dir"))).path
 
 fun String.red() = "\u001B[31m$this\u001B[0m"
