@@ -5,13 +5,73 @@ import java.io.File
 import java.nio.file.Files
 import kotlin.io.path.Path
 
+object Config {
+    /**
+     * consists of the following:
+     * - sections, eg [ core ]
+     * - keys, eg repositoryformatversion
+     * - values, eg 0
+     * */
+    private fun getConfigFile() = File("${System.getProperty("user.dir")}/.kit/config")
+    private val sections = mutableListOf("core") // to be updated when more sections are added
+    private val values = mutableMapOf(
+        "core" to mutableMapOf(
+            "repositoryformatversion" to "0",
+            "filemode" to "true",
+            "bare" to "false",
+            "logallrefupdates" to "true"
+        )
+    )
+
+    fun unset() {
+        sections.removeIf { it != "core" }
+    }
+
+    fun write() {
+        getConfigFile().createNewFile()
+        getConfigFile().writeText("")
+        for (section in sections) {
+            getConfigFile().appendText("[$section]\n")
+            for ((key, value) in values[section]!!) {
+                getConfigFile().appendText("\t$key = $value\n")
+            }
+        }
+    }
+
+    fun set(sectionWithKey: String, value: String) {
+        val section = sectionWithKey.split(".")[0]
+        val key = sectionWithKey.split(".")[1]
+        if (!sections.contains(section)) {
+            sections.add(section)
+            values[section] = mutableMapOf()
+        }
+        values[section]!![key] = value
+        write()
+    }
+
+    fun get(sectionWithKey: String): String {
+        val section = sectionWithKey.split(".")[0]
+        val key = sectionWithKey.split(".")[1]
+        if (section == "user" && (key == "name" || key == "email")) {
+            if (!sections.contains(section)) {
+                sections.add(section)
+                values[section] = mutableMapOf()
+            }
+            if (values[section]!![key] == null) values[section]!![key] = "Kit $key"
+        }
+        return values[section]!![key]!!
+    }
+}
+
 
 fun init(repositoryName: String = ""): String {
     var path = "${System.getProperty("user.dir")}/"
     if (repositoryName.isNotEmpty()) {
         File("$path/$repositoryName").mkdir()
-        path += "$repositoryName/"
-
+        if (!path.contains(repositoryName)) {
+            path += "$repositoryName/"
+        }
+        System.setProperty("user.dir", path)
         if (File("$path.kit").exists()) {
             return "Reinitialized existing Kit repository in ${File("${path}.kit").absolutePath}"
         }
@@ -27,8 +87,8 @@ fun init(repositoryName: String = ""): String {
     File("${path}.kit/HEAD").writeText("ref: refs/heads/master")
     // config
     // default config
-    File("${path}.kit/config").writeText("[core]\n\trepositoryformatversion = 0\n\tfilemode = true\n\tbare = false\n\tlogallrefupdates = true\n")
-
+    Config.unset()
+    Config.write()
     return "Initialized empty Kit repository in ${File("${path}.kit").absolutePath}"
 }
 

@@ -522,6 +522,24 @@ class PorcelainKtTest {
 
     }
 
+
+    @Test
+    fun `set config`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        Config.set("user.name", "test")
+        Config.set("user.email", "test@gmail.com")
+
+        assertEquals("test", Config.get("user.name"))
+        assertEquals("test@gmail.com", Config.get("user.email"))
+    }
+
+
     private fun statusString(
         untrackedFiles: List<String>,
         addedFiles: List<String>,
