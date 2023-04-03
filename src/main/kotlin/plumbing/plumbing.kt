@@ -105,8 +105,9 @@ fun parseTreeContent(contentWithoutHeader: MutableList<Byte>): String {
      * */
     val entries = mutableListOf<TreeEntry>()
     while (contentWithoutHeader.isNotEmpty()) {
-        val mode = contentWithoutHeader.subList(0, 6).toByteArray().toString(Charsets.UTF_8)
-        contentWithoutHeader.subList(0, 6).clear()
+        val mode = contentWithoutHeader.subList(0, contentWithoutHeader.indexOf(32.toByte())).toByteArray()
+            .toString(Charsets.UTF_8)
+        contentWithoutHeader.subList(0, contentWithoutHeader.indexOf(32.toByte())).clear()
         contentWithoutHeader.removeAt(0) // remove the space
         val path = contentWithoutHeader.subList(0, contentWithoutHeader.indexOf(0.toByte())).toByteArray()
             .toString(Charsets.UTF_8)
