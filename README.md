@@ -40,7 +40,7 @@ I'll be implementing plumbing commands at first, then I'll implement porcelain c
 - [x] add
 - [x] unstage
 - [x] commit
-- [ ] log
+- [x] log
 - [ ] status ⏳  
 - [x] checkout
 - [x] branch

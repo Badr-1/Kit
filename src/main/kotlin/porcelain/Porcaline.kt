@@ -213,6 +213,71 @@ fun checkout(ref: String) {
     updateWorkingDirectory(commitHash)
 }
 
+// this is a helper function for the actual log command
+fun getHistory(): List<String> {
+    val commits = mutableListOf<String>()
+    val head = getHead()
+    var it = head
+    do {
+        commits.add(it)
+        it = getParent(it)
+    } while (it != "")
+    return commits
+}
+
+fun getRefs(): MutableMap<String, String> {
+    val refs = mutableMapOf<String, String>()
+    val branches = File("${System.getProperty("user.dir")}/.kit/refs/heads").listFiles()!!
+    for (branch in branches) {
+        refs[branch.readText()] = branch.relativeTo(File("${System.getProperty("user.dir")}/.kit/refs/heads")).path
+    }
+    return refs
+}
+
+fun log() {
+    val commits = getHistory()
+    val branches = getRefs()
+    val head = when {
+        File("${System.getProperty("user.dir")}/.kit/HEAD").readText().matches(Regex("[0-9a-f]{40}")) -> getHead()
+        else -> branches[getHead()]!!
+    }
+    for (commit in commits) {
+        val commitContent = catFile(commit, "-p")
+        val hasParent = if (commitContent.contains("parent")) 0 else 1
+        val authorLine = commitContent.split("\n")[2 - hasParent].split(" ").toMutableList()
+        authorLine.removeFirst()
+        authorLine.removeLast()
+        authorLine.removeLast()
+        val author = authorLine.joinToString(" ").green()
+        // TODO add timestamp
+        val message = commitContent.split("\n")[4 - hasParent]
+        val refs = branches.filter { it.key == commit }.map { it.value }.toMutableList()
+        if (commit == head) {
+            refs.add("HEAD")
+        } else if (refs.contains(head)) {
+            refs.remove(head)
+            refs.add("HEAD -> $head")
+        }
+        println(
+            "* ${
+                commit.substring(
+                    0,
+                    7
+                ).red()
+            }${if (refs.isNotEmpty()) " (${refs.joinToString()})".yellow() else ""} $message <$author>"
+        )
+    }
+}
+
+fun getParent(commitHash: String): String {
+    val content = catFile(commitHash, "-p")
+    return if (content.contains("parent")) {
+        content.split("\n")[1].split(" ")[1]
+    } else {
+        ""
+    }
+}
+
 fun getHead(): String {
     val head = File("${System.getProperty("user.dir")}/.kit/HEAD").readText()
     return if (head.contains("ref: refs/heads/")) {
