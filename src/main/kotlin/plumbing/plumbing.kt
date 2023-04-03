@@ -1,6 +1,7 @@
 package plumbing
 
 import hexStringToByteArray
+import porcelain.Config
 import java.io.File
 import java.io.FileNotFoundException
 import java.nio.file.Files
@@ -51,9 +52,9 @@ fun commitTree(treeHash: String, commitMessage: String, parentCommit: String = "
     val tree = "tree $treeHash\n"
     val parent = if (parentCommit.isEmpty()) parentCommit else "parent $parentCommit\n"
     val author =
-        "author user-name <user-email> ${System.currentTimeMillis() / 1000} +0200\n"
+        "author ${Config.get("user.name")} ${Config.get("user.email")} ${System.currentTimeMillis() / 1000} +0200\n"
     val committer =
-        "committer user-name <user-email> ${System.currentTimeMillis() / 1000} +0200\n"
+        "committer ${Config.get("user.name")} ${Config.get("user.email")} ${System.currentTimeMillis() / 1000} +0200\n"
     val message = commitMessage.ifEmpty { throw Exception("commit message is empty") }
     val content = tree + parent + author + committer + message
     return hashObject(content, type = "commit", write = true)
