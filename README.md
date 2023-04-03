@@ -8,7 +8,7 @@ I've Been Reading About Git For Quite Some Time And have Explained It To Many Of
 And While I Was Learning Kotlin With JetBrains Academy, One Of The Projects Was About Version Control System, especially
 Git, But The Implementation Level Wasn't That Interesting, After That I came Across [CodeCrafters](https://codecrafters.io/), 
 They have modules for building some projects with theme `Build Your Own`, and one of them was `Build Your Own Git`,
-but it didn't also catch my attention, and they didn't have a kotlin version, so I decided to implement it myself, and make it compatible with git and i named it `kit (kotlin implementation of git).`\
+but it didn't also catch my attention, and they didn't have a kotlin version, so I decided to implement it myself, and make it compatible with git and I named it `kit (kotlin implementation of git).`\
 my intention for this project was to learn more about git, and build a decent project with kotlin considering that it's my favorite language.\
 also I'm not implementing the whole git, I'm just implementing the core features of git, and I'm not implementing it in the best way, I'm just trying to implement it in a way that I can understand it, and hopefully others can understand it too.
 so it's **an educational project**, also if you want to contribute, you're welcome.
@@ -26,3 +26,22 @@ git model is based on four objects:
 - **Tag**: a tag is a label for a commit, it's a pointer to a commit.
 
 I'll be implementing plumbing commands at first, then I'll implement porcelain commands.
+
+## Plumbing Commands
+- [x] hash-object
+- [x] cat-file
+- [x] update-index
+- [x] write-tree
+- [x] commit-tree
+- [x] ls-files
+
+## Porcelain Commands
+- [x] init
+- [x] add
+- [x] unstage
+- [x] commit
+- [ ] log
+- [ ] status ⏳  
+- [x] checkout
+- [ ] branch
+- [ ] config
