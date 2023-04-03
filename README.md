@@ -43,5 +43,5 @@ I'll be implementing plumbing commands at first, then I'll implement porcelain c
 - [ ] log
 - [ ] status ⏳  
 - [x] checkout
-- [ ] branch
+- [x] branch
 - [ ] config

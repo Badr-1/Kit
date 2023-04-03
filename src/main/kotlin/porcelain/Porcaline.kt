@@ -153,6 +153,39 @@ fun checkout(ref: String) {
     updateWorkingDirectory(commitHash)
 }
 
+fun getHead(): String {
+    val head = File("${System.getProperty("user.dir")}/.kit/HEAD").readText()
+    return if (head.contains("ref: refs/heads/")) {
+        val branch = File(System.getProperty("user.dir") + "/.kit/" + head.split(" ")[1])
+        branch.readText()
+    } else {
+        head
+    }
+}
+
+fun branch(branchName: String, ref: String = "HEAD") {
+    val branch = File("${System.getProperty("user.dir")}/.kit/refs/heads/$branchName")
+    if (branch.exists()) {
+        throw Exception("fatal: A branch named '$branchName' already exists.")
+    } else {
+        if (branchName.contains("/")) {
+            branch.parentFile.mkdirs()
+        }
+        branch.createNewFile()
+    }
+    when (ref) {
+        "HEAD" -> {
+            val head = getHead()
+            branch.writeText(head)
+        }
+
+        else -> {
+            branch.writeText(ref)
+        }
+    }
+
+}
+
 fun updateWorkingDirectory(commitHash: String) {
     // get the tree hash from the commit
     val treeHash = getTreeHash(commitHash)

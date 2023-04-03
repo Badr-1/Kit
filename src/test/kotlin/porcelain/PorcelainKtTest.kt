@@ -426,6 +426,102 @@ class PorcelainKtTest {
         assertEquals("test text", File(filePath).readText())
     }
 
+    @Test
+    fun `make an existent branch`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // create a file
+        val filePath = "${workingDirectory.path}/test.txt"
+        File(filePath).writeText("test text")
+        add(filePath)
+        commit("test commit")
+        val exception = assertThrows<Exception> {
+            branch("master")
+        }
+        assertEquals("fatal: A branch named 'master' already exists.", exception.message)
+    }
+
+    @Test
+    fun `make a new branch without directories`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // create a file
+        val filePath = "${workingDirectory.path}/test.txt"
+        File(filePath).writeText("test text")
+        add(filePath)
+        val hash = commit("test commit")
+        branch("test")
+        assertEquals(hash, File("$workingDirectory/.kit/refs/heads/test").readText())
+
+    }
+
+    @Test
+    fun `make a new branch with directories`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // create a file
+        val filePath = "${workingDirectory.path}/test.txt"
+        File(filePath).writeText("test text")
+        add(filePath)
+        val hash = commit("test commit")
+        branch("feature/test")
+        assertEquals(hash, File("$workingDirectory/.kit/refs/heads/feature/test").readText())
+
+    }
+
+    @Test
+    fun `make a new branch with a ref`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // create a file
+        val filePath = "${workingDirectory.path}/test.txt"
+        File(filePath).writeText("test text")
+        add(filePath)
+        val hash = commit("test commit")
+        branch("test", hash)
+        assertEquals(hash, File("$workingDirectory/.kit/refs/heads/test").readText())
+
+    }
+    @Test
+    fun `make a new branch without a ref`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // create a file
+        val filePath = "${workingDirectory.path}/test.txt"
+        File(filePath).writeText("test text")
+        add(filePath)
+        val hash = commit("test commit")
+        checkout(hash)
+        branch("test")
+        assertEquals(hash, File("$workingDirectory/.kit/refs/heads/test").readText())
+
+    }
+
     private fun statusString(
         untrackedFiles: List<String>,
         addedFiles: List<String>,
