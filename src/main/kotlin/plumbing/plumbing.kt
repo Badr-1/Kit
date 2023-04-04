@@ -1,11 +1,10 @@
 package plumbing
 
 import porcelain.Config
+import porcelain.getMode
 import utils.*
 import java.io.*
-import java.nio.file.Files
 import java.security.MessageDigest
-import kotlin.io.path.Path
 
 
 /**
@@ -180,14 +179,7 @@ fun writeTree(directory: String, write: Boolean = false): String {
              * mode per git documentation:
              * @see <a href="https://git-scm.com/book/en/v2/Git-Internals-Git-Objects">git Objects - Tree Objects</a>
              */
-            val mode = when {
-                // check if the file is executable
-                file.canExecute() -> "100755"
-                // check if the file is a symlink
-                Files.isSymbolicLink(Path(file.path)) -> "120000"
-                // then it's a normal file
-                else -> "100644"
-            }
+            val mode = getMode(file)
             // case 2 & 3
             entries.add(TreeEntry(mode, file.name, indexEntry.sha1))
         }

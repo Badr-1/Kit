@@ -107,6 +107,11 @@ fun add(filePath: String) {
     }
     val file = File(filePath)
     // update the index
+    val mode = getMode(file)
+    updateIndex(filePath, "-a", hashObject(filePath, write = true), mode)
+}
+
+fun getMode(file: File): String {
     val mode = when {
         // check if the file is executable
         file.canExecute() -> "100755"
@@ -115,7 +120,7 @@ fun add(filePath: String) {
         // then it's a normal file
         else -> "100644"
     }
-    updateIndex(filePath, "-a", hashObject(filePath, write = true), mode)
+    return mode
 }
 
 fun unstage(filePath: String) {
