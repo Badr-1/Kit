@@ -354,7 +354,6 @@ class PorcelainKtTest {
         assertEquals(commitHash, File("$workingDirectory/.kit/HEAD").readText())
         // the content of the file should be the same as the checkout commit
         assertEquals("test text", File(filePath).readText())
-        log()
     }
 
     @Test
@@ -557,7 +556,9 @@ class PorcelainKtTest {
         val hash = commit("test commit")
         val history = getHistory()
         assertEquals(hash, history[0])
+        log()
     }
+
 
     @Test
     fun `get history multiple commit`() {
@@ -574,10 +575,46 @@ class PorcelainKtTest {
             val filePath = "${workingDirectory.path}/test.txt"
             File(filePath).writeText("test text $i")
             add(filePath)
+            // sleep for random seconds 1 to 3
+            Thread.sleep((1000..3000).random().toLong())
             val hash = commit("test commit")
             commits.add(hash)
             if (i == 3) {
                 branch("demo")
+            }
+        }
+        val history = getHistory()
+        for (i in 0..4) {
+            assertEquals(commits[4 - i], history[i])
+        }
+        log()
+    }
+
+    @Test
+    fun `get history multiple commit with Detached HEAD`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        val commits = mutableListOf<String>()
+        for (i in 1..5) {
+            // create a file
+            val filePath = "${workingDirectory.path}/test.txt"
+            File(filePath).writeText("test text $i")
+            add(filePath)
+            // sleep for random seconds 1 to 2
+            Thread.sleep((1000..2000).random().toLong())
+            val hash = commit("test commit")
+            commits.add(hash)
+            if (i == 3) {
+                branch("demo")
+            }
+            if(i == 5)
+            {
+                checkout(hash)
             }
         }
         val history = getHistory()

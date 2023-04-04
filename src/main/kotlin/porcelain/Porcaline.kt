@@ -3,6 +3,11 @@ package porcelain
 import plumbing.*
 import java.io.File
 import java.nio.file.Files
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.Period
+import java.time.ZoneId
+import java.util.*
 import kotlin.io.path.Path
 
 object Config {
@@ -247,9 +252,14 @@ fun log() {
         val authorLine = commitContent.split("\n")[2 - hasParent].split(" ").toMutableList()
         authorLine.removeFirst()
         authorLine.removeLast()
-        authorLine.removeLast()
+        val unixEpoch = authorLine.removeLast()
+        val date = Date(unixEpoch.toLong() * 1000)
+        val today = Date()
+        val timeDifference = calculateDateTimeDifference(
+            date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
+            today.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
+        )
         val author = authorLine.joinToString(" ").green()
-        // TODO add timestamp
         val message = commitContent.split("\n")[4 - hasParent]
         val refs = branches.filter { it.key == commit }.map { it.value }.toMutableList()
         if (commit == head) {
@@ -264,8 +274,32 @@ fun log() {
                     0,
                     7
                 ).red()
-            }${if (refs.isNotEmpty()) " (${refs.joinToString()})".yellow() else ""} $message <$author>"
+            }${if (refs.isNotEmpty()) " (${refs.joinToString()})".yellow() else ""} $message <$author> (${timeDifference.green()})"
         )
+    }
+}
+
+fun calculateDateTimeDifference(startDate: LocalDateTime, endDate: LocalDateTime): String {
+    val duration = Duration.between(startDate, endDate)
+    val period = Period.between(startDate.toLocalDate(), endDate.toLocalDate())
+
+    val years = period.years
+    val months = period.months
+    val days = period.days
+
+    val hours = duration.toHours() % 24
+    val minutes = duration.toMinutes() % 60
+    val seconds = duration.seconds % 60
+
+    // return the most significant time unit
+    return when {
+        years > 0 -> "$years year${if (years > 1) "s" else ""} ago"
+        months > 0 -> "$months month${if (months > 1) "s" else ""} ago"
+        days > 0 -> "$days day${if (days > 1) "s" else ""} ago"
+        hours > 0 -> "$hours hour${if (hours > 1) "s" else ""} ago"
+        minutes > 0 -> "$minutes minute${if (minutes > 1) "s" else ""} ago"
+        seconds > 0 -> "$seconds second${if (seconds > 1) "s" else ""} ago"
+        else -> "just now"
     }
 }
 
