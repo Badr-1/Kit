@@ -19,10 +19,7 @@ object Config {
     private val sections = mutableListOf("core") // to be updated when more sections are added
     private val values = mutableMapOf(
         "core" to mutableMapOf(
-            "repositoryformatversion" to "0",
-            "filemode" to "true",
-            "bare" to "false",
-            "logallrefupdates" to "true"
+            "repositoryformatversion" to "0", "filemode" to "true", "bare" to "false", "logallrefupdates" to "true"
         )
     )
 
@@ -136,8 +133,9 @@ fun unstage(filePath: String) {
 // TODO this should be updated when the commit command is implemented
 fun status(): String {
     // get all the files in the working directory except the .kit directory
-    val workingDirectoryFiles = File(System.getProperty("user.dir")).walk()
-        .filter { it.isFile && !it.path.contains(".kit") }.toList().map { it.relativePath() }
+    val workingDirectoryFiles =
+        File(System.getProperty("user.dir")).walk().filter { it.isFile && !it.path.contains(".kit") }.toList()
+            .map { it.relativePath() }
 
     // get all the files in the index
     val indexFiles = GitIndex.entries().map { it.path }
@@ -172,27 +170,22 @@ fun status(): String {
 
 // TODO think about adding amend option
 fun commit(message: String): String {
-    val head = File("${System.getProperty("user.dir")}/.kit/HEAD").readText()
+    val head = getHead()
     val parent = when {
-        head.contains("ref: refs/heads/") -> {
-            val branch = File(System.getProperty("user.dir") + "/.kit/" + head.split(" ")[1])
-            if (branch.exists()) {
-                branch.readText()
-            } else {
-                ""
-            }
+        head.matches(Regex("[0-9a-f]{40}")) -> head
+        else -> {
+            if (File("${System.getProperty("user.dir")}/.kit/refs/heads/$head").exists()) getBranchCommit(head)
+            else ""
         }
-
-        else -> head // commit hash
     }
     val treeHash = writeTree(System.getProperty("user.dir"), write = true)
     val commitHash = commitTree(treeHash, message, parent)
-    if (head.contains("ref: refs/heads/")) {
-        val branch = File(System.getProperty("user.dir") + "/.kit/" + head.split(" ")[1])
+    if (head.matches(Regex("[0-9a-f]{40}"))) {
+        File("${System.getProperty("user.dir")}/.kit/HEAD").writeText(commitHash)
+    } else {
+        val branch = File("${System.getProperty("user.dir")}/.kit/refs/heads/$head")
         branch.createNewFile()
         branch.writeText(commitHash)
-    } else {
-        File("${System.getProperty("user.dir")}/.kit/HEAD").writeText(commitHash)
     }
     return commitHash
 }
@@ -221,10 +214,18 @@ fun getHistory(): List<String> {
     val commits = mutableListOf<String>()
     val head = getHead()
     var it = head
+    if (!head.matches(Regex("[0-9a-f]{40}"))) { // if the head is a branch
+        try {
+            it = getBranchCommit(head) // throw an exception if the branch doesn't exist
+        } catch (e: Exception) {
+            return commits // return an empty list
+        }
+    }
     do {
         commits.add(it)
         it = getParent(it)
     } while (it != "")
+
     return commits
 }
 
@@ -239,6 +240,8 @@ fun getRefs(): MutableMap<String, String> {
 
 fun log() {
     val commits = getHistory()
+    if (commits.isEmpty())
+        return
     val branches = getRefs()
     val head = when {
         File("${System.getProperty("user.dir")}/.kit/HEAD").readText().matches(Regex("[0-9a-f]{40}")) -> getHead()
@@ -274,8 +277,7 @@ fun log() {
         println(
             "* ${
                 commit.substring(
-                    0,
-                    7
+                    0, 7
                 ).red()
             }${if (refs.isNotEmpty()) " (${refs.joinToString()})".yellow() else ""} $message <$author> (${timeDifference.green()})"
         )
@@ -318,8 +320,9 @@ fun getParent(commitHash: String): String {
 fun getHead(): String {
     val head = File("${System.getProperty("user.dir")}/.kit/HEAD").readText()
     return if (head.contains("ref: refs/heads/")) {
-        val branch = File(System.getProperty("user.dir") + "/.kit/" + head.split(" ")[1])
-        branch.readText()
+        val branch =
+            File(System.getProperty("user.dir") + "/.kit/" + head.split(" ")[1]).relativePath("${System.getProperty("user.dir")}/.kit/refs/heads")
+        branch
     } else {
         head
     }
@@ -338,7 +341,13 @@ fun branch(branchName: String, ref: String = "HEAD") {
     when (ref) {
         "HEAD" -> {
             val head = getHead()
-            branch.writeText(head)
+            val dest = when {
+                head.matches(Regex("[0-9a-f]{40}")) -> head
+                else -> {
+                    getBranchCommit(head)
+                }
+            }
+            branch.writeText(dest)
         }
 
         else -> {
@@ -346,6 +355,13 @@ fun branch(branchName: String, ref: String = "HEAD") {
         }
     }
 
+}
+
+private fun getBranchCommit(branch: String): String {
+    if (!File("${System.getProperty("user.dir")}/.kit/refs/heads/$branch").exists()) {
+        throw Exception("fatal: Not a valid object name: '$branch'.")
+    }
+    return File("${System.getProperty("user.dir")}/.kit/refs/heads/$branch").readText()
 }
 
 fun updateWorkingDirectory(commitHash: String) {
@@ -377,9 +393,7 @@ fun getTreeEntries(treeHash: String): List<TreeEntry> {
         if (mode == "40000") {
             treeEntries.addAll(getTreeEntries(sha1).map { treeEntry ->
                 TreeEntry(
-                    treeEntry.mode,
-                    "$path/${treeEntry.path}",
-                    treeEntry.hash
+                    treeEntry.mode, "$path/${treeEntry.path}", treeEntry.hash
                 )
             })
         } else {

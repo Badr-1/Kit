@@ -524,6 +524,21 @@ class PorcelainKtTest {
 
     }
 
+    @Test
+    fun `make a new branch without a commit`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        val exception = assertThrows<Exception> {
+            branch("test")
+        }
+        assertEquals("fatal: Not a valid object name: 'master'.", exception.message)
+    }
+
 
     @Test
     fun `set config`() {
@@ -576,8 +591,6 @@ class PorcelainKtTest {
             val filePath = "${workingDirectory.path}/test.txt"
             File(filePath).writeText("test text $i")
             add(filePath)
-            // sleep for random seconds 1 to 3
-            Thread.sleep((1000..3000).random().toLong())
             val hash = commit("test commit")
             commits.add(hash)
             if (i == 3) {
@@ -606,15 +619,12 @@ class PorcelainKtTest {
             val filePath = "${workingDirectory.path}/test.txt"
             File(filePath).writeText("test text $i")
             add(filePath)
-            // sleep for random seconds 1 to 2
-            Thread.sleep((1000..2000).random().toLong())
             val hash = commit("test commit")
             commits.add(hash)
             if (i == 3) {
                 branch("demo")
             }
-            if(i == 5)
-            {
+            if (i == 5) {
                 checkout(hash)
             }
         }
@@ -625,6 +635,18 @@ class PorcelainKtTest {
         log()
     }
 
+    @Test
+    fun `get empty history`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        val history = getHistory()
+        assertEquals(0, history.size)
+    }
 
     private fun statusString(
         untrackedFiles: List<String>,
