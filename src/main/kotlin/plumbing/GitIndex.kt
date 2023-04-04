@@ -173,7 +173,7 @@ object GitIndex {
         if (entries.any { it.path == file.relativePath() }) {
             // check if the file is modified
             val entry = entries.first { it.path == file.relativePath() }
-            if (entry.sha1 == sha1) {
+            if (entry.sha1 == sha1 && entry.mode == cacheInfo.toInt(8)) {
                 return
             }
             remove(file)
