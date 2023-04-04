@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import plumbing.GitIndex
+import utils.*
 import java.io.File
 
 class PorcelainKtTest {

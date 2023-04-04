@@ -1,6 +1,6 @@
 package plumbing
 
-import hexStringToByteArray
+import utils.*
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.file.Files
@@ -170,9 +170,9 @@ object GitIndex {
 
     fun add(file: File, sha1: String, cacheInfo: String) {
         // check if the file is already in the index
-        if (entries.any { it.path == file.relativeTo(File(System.getProperty("user.dir"))).path }) {
+        if (entries.any { it.path == file.relativePath() }) {
             // check if the file is modified
-            val entry = entries.first { it.path == file.relativeTo(File(System.getProperty("user.dir"))).path }
+            val entry = entries.first { it.path == file.relativePath() }
             if (entry.sha1 == sha1) {
                 return
             }
@@ -199,9 +199,9 @@ object GitIndex {
 
     fun remove(file: File) {
         // check if the file is in the index
-        if (entries.any { it.path == file.relativeTo(File(System.getProperty("user.dir"))).path }) {
+        if (entries.any { it.path == file.relativePath() }) {
             // remove the file from the index
-            entries.removeIf { it.path == file.relativeTo(File(System.getProperty("user.dir"))).path }
+            entries.removeIf { it.path == file.relativePath() }
             // write header
             indexFile.writeBytes("".toByteArray())
             indexFile.writeBytes(signature.toByteArray())
@@ -239,7 +239,7 @@ object GitIndex {
         val uid = attr["uid"]!!.toString().toInt()
         val gid = attr["gid"]!!.toString().toInt()
         val fileSize = file.readBytes().size
-        val name = file.relativeTo(File(System.getProperty("user.dir"))).path
+        val name = file.relativePath()
         val flags = 0x0000 + name.length
         val entrySize = 62 + name.length
         val padding = ((8 - ((entrySize) % 8)).coerceAtMost(8))

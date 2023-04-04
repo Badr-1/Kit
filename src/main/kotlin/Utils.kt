@@ -1,3 +1,5 @@
+package utils
+import java.io.File
 import java.util.concurrent.TimeUnit
 
 /**
@@ -34,3 +36,5 @@ fun String.hexStringToByteArray(): ByteArray {
     }
     return byteArray
 }
+
+fun File.relativePath(path: String = System.getProperty("user.dir")): String = this.relativeTo(File(path)).path

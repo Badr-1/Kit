@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import plumbing.GitIndex.clearIndex
 import plumbing.GitIndex.refreshIndex
-import runCommand
+import utils.*
 import java.io.File
 import kotlin.random.Random
 import kotlin.test.fail

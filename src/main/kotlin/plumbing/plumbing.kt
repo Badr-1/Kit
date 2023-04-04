@@ -1,9 +1,8 @@
 package plumbing
 
-import hexStringToByteArray
 import porcelain.Config
-import java.io.File
-import java.io.FileNotFoundException
+import utils.*
+import java.io.*
 import java.nio.file.Files
 import java.security.MessageDigest
 import kotlin.io.path.Path
@@ -172,7 +171,7 @@ fun writeTree(directory: String, write: Boolean = false): String {
              * 3- the file is in the index with a different hash => add what's in the index to the tree
              * this means that the file is modified but not staged yet.
              */
-            val indexEntry = GitIndex.get(file.relativeTo(File(System.getProperty("user.dir"))).path)
+            val indexEntry = GitIndex.get(file.relativePath())
             if (indexEntry == null) { // case 1
                 println("file ${file.path} is not in the index") // TODO: remove this after debugging
                 continue

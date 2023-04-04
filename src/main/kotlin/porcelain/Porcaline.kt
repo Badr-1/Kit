@@ -1,12 +1,10 @@
 package porcelain
 
 import plumbing.*
+import utils.*
 import java.io.File
 import java.nio.file.Files
-import java.time.Duration
-import java.time.LocalDateTime
-import java.time.Period
-import java.time.ZoneId
+import java.time.*
 import java.util.*
 import kotlin.io.path.Path
 
@@ -129,7 +127,7 @@ fun unstage(filePath: String) {
         throw Exception("fatal: pathspec '$filePath' is outside repository")
     }
     // check if the file exists or is in the index
-    if (GitIndex.get(File(filePath).relativeTo(File(System.getProperty("user.dir"))).path) == null) {
+    if (GitIndex.get(File(filePath).relativePath()) == null) {
         throw Exception("fatal: pathspec '$filePath' did not match any files")
     }
     updateIndex(filePath, "-d")
@@ -234,7 +232,7 @@ fun getRefs(): MutableMap<String, String> {
     val refs = mutableMapOf<String, String>()
     val branches = File("${System.getProperty("user.dir")}/.kit/refs/heads").walk().filter { it.isFile }.toList()
     for (branch in branches) {
-        refs[branch.relativeTo(File("${System.getProperty("user.dir")}/.kit/refs/heads")).path] = branch.readText()
+        refs[branch.relativePath("${System.getProperty("user.dir")}/.kit/refs/heads")] = branch.readText()
     }
     return refs
 }
@@ -391,7 +389,6 @@ fun getTreeEntries(treeHash: String): List<TreeEntry> {
     return treeEntries
 }
 
-fun File.relativePath(): String = this.relativeTo(File(System.getProperty("user.dir"))).path
 
 fun String.red() = "\u001B[31m$this\u001B[0m"
 fun String.green() = "\u001B[32m$this\u001B[0m"
