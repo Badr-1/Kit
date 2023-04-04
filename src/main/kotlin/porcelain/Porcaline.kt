@@ -232,9 +232,9 @@ fun getHistory(): List<String> {
 
 fun getRefs(): MutableMap<String, String> {
     val refs = mutableMapOf<String, String>()
-    val branches = File("${System.getProperty("user.dir")}/.kit/refs/heads").listFiles()!!
+    val branches = File("${System.getProperty("user.dir")}/.kit/refs/heads").walk().filter { it.isFile }.toList()
     for (branch in branches) {
-        refs[branch.readText()] = branch.relativeTo(File("${System.getProperty("user.dir")}/.kit/refs/heads")).path
+        refs[branch.relativeTo(File("${System.getProperty("user.dir")}/.kit/refs/heads")).path] = branch.readText()
     }
     return refs
 }
@@ -244,7 +244,12 @@ fun log() {
     val branches = getRefs()
     val head = when {
         File("${System.getProperty("user.dir")}/.kit/HEAD").readText().matches(Regex("[0-9a-f]{40}")) -> getHead()
-        else -> branches[getHead()]!!
+        else -> {
+            var head = File("${System.getProperty("user.dir")}/.kit/HEAD").readText().split(" ")[1]
+            head =
+                File("${System.getProperty("user.dir")}/.kit/$head").relativeTo(File("${System.getProperty("user.dir")}/.kit/refs/heads")).path
+            head
+        }
     }
     for (commit in commits) {
         val commitContent = catFile(commit, "-p")
@@ -261,7 +266,7 @@ fun log() {
         )
         val author = authorLine.joinToString(" ").green()
         val message = commitContent.split("\n")[4 - hasParent]
-        val refs = branches.filter { it.key == commit }.map { it.value }.toMutableList()
+        val refs = branches.filter { it.value == commit }.map { it.key }.toMutableList()
         if (commit == head) {
             refs.add("HEAD")
         } else if (refs.contains(head)) {
