@@ -135,7 +135,6 @@ fun unstage(filePath: String) {
     updateIndex(filePath, "-d")
 }
 
-// TODO this should be updated when the commit command is implemented
 fun status(): String {
     // get all the files in the working directory except the .kit directory
     val workingDirectoryFiles =
@@ -145,32 +144,114 @@ fun status(): String {
     // get all the files in the index
     val indexFiles = GitIndex.entries().map { it.path }
 
-    // untracked files are the files that are in the working directory but not in the index
-    val untrackedFiles = workingDirectoryFiles.filter { !indexFiles.contains(it) }
+    // get all files in the HEAD commit tree
+    val headCommitTreeFiles = getHeadCommitTreeFiles()
 
-    // modified files are the files that are in the index but has different hash from the working directory
-    val modifiedFiles = indexFiles.filter {
-        workingDirectoryFiles.contains(it) && GitIndex.get(it)!!.sha1 != hashObject("${System.getProperty("user.dir")}/$it")
+    val untrackedFiles = mutableListOf<String>()
+    val unStagedChanges = mutableListOf<String>()
+    val stagedChanges = mutableListOf<String>()
+
+    // untracked files are files that are in the working directory but not in the index
+    untrackedFiles.addAll(workingDirectoryFiles.filter { !indexFiles.contains(it) })
+
+    /**
+     * unStaged changes are the following (index vs working directory):
+     * 1. content: the sha1 is different => modified
+     * 2. mode: the mode is different => modified
+     * 3. deleted: the file is deleted => deleted
+     */
+    // add modified files (content)
+    unStagedChanges.addAll(
+        workingDirectoryFiles.filter { indexFiles.contains(it) }
+            .filter { GitIndex.get(it)!!.sha1 != hashObject("${System.getProperty("user.dir")}/$it") }
+            .map { "M $it" }
+    )
+    // add modified files (mode)
+    unStagedChanges.addAll(
+        workingDirectoryFiles.filter { indexFiles.contains(it) }
+            .filter { GitIndex.get(it)!!.mode != getMode(File("${System.getProperty("user.dir")}/$it")).toInt(8) }
+            .map { "M $it" }
+    )
+    // add deleted files
+    unStagedChanges.addAll(
+        indexFiles.filter { !workingDirectoryFiles.contains(it) }
+            .map { "D $it" }
+    )
+    /**
+     * staged changes are the following (index vs HEAD commit tree):
+     * 1. content: the sha1 is different => modified
+     * 2. mode: the mode is different => modified
+     * 3. deleted: the file is deleted => deleted
+     * 4. added: the file is added => added
+     */
+    if (headCommitTreeFiles.isEmpty()) {
+        // add added files
+        stagedChanges.addAll(
+            workingDirectoryFiles.filter { indexFiles.contains(it) }
+                .map { "A $it" }
+        )
+    } else {
+        // add added files
+        stagedChanges.addAll(
+            indexFiles.filter { !headCommitTreeFiles.map { headEntry -> headEntry.path }.contains(it) }
+                .map { "A $it" }
+        )
+        // add modified files (content)
+        stagedChanges.addAll(
+            indexFiles.filter { headCommitTreeFiles.map { headEntry -> headEntry.path }.contains(it) }
+                .filter {common -> GitIndex.get(common)!!.sha1 != headCommitTreeFiles.find { it.path == common }!!.hash }
+                .map { "M $it" }
+        )
+        // add modified files (mode)
+        stagedChanges.addAll(
+            indexFiles.filter { headCommitTreeFiles.map { headEntry -> headEntry.path }.contains(it) }
+                .filter {common -> GitIndex.get(common)!!.mode != headCommitTreeFiles.find { it.path == common }!!.mode.toInt(8) }
+                .map { "M $it" }
+        )
+        // add deleted files
+        stagedChanges.addAll(
+            headCommitTreeFiles.map { it.path }.filter { !indexFiles.contains(it) }
+                .map { "D $it" }
+        )
     }
-    // deleted files are the files that are in the index but not in the working directory
-    val deletedFiles = indexFiles.filter { !workingDirectoryFiles.contains(it) }
 
-    // added files
-    val addedFiles = indexFiles.filter { !deletedFiles.contains(it) && !modifiedFiles.contains(it) }
 
+    return statusString(untrackedFiles, stagedChanges, unStagedChanges)
+}
+
+fun statusString(
+    untrackedFiles: List<String>,
+    staged: List<String>,
+    unStaged: List<String>,
+): String {
     return """
         On branch master
         
         Untracked files:
-        ${untrackedFiles.sorted().joinToString("\n\t\t") { "?? $it".red() }}
+        ${untrackedFiles.sorted().joinToString("\n\t\t") { "?? $it" }}
         
         Changes to be committed :
-        ${addedFiles.sorted().joinToString("\n\t\t") { "A $it".green() }}
+        ${staged.sorted().joinToString("\n\t\t") { it }}
+        
         Changes not staged for commit:
-        ${modifiedFiles.sorted().joinToString("\n\t\t") { "M $it".yellow() }}
-        ${deletedFiles.sorted().joinToString("\n\t\t") { "D $it".yellow() }}
+        ${unStaged.sorted().joinToString("\n\t\t") { it }}
 
         """
+}
+
+fun getHeadCommitTreeFiles(): MutableList<TreeEntry> {
+    val head = getHead()
+    return if (!head.matches(Regex("[0-9a-f]{40}"))) {
+        return try {
+            val branch = getBranchCommit(head)
+            getTreeEntries(getTreeHash(branch)).toMutableList()
+        } catch (e: Exception) {
+            mutableListOf()
+        }
+    } else {
+        getTreeEntries(getTreeHash(head)).toMutableList()
+    }
+
 }
 
 // TODO think about adding amend option

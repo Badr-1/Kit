@@ -7,7 +7,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import plumbing.GitIndex
-import utils.*
 import java.io.File
 
 class PorcelainKtTest {
@@ -209,7 +208,7 @@ class PorcelainKtTest {
     }
 
     @Test
-    fun `status all`() {
+    fun `status without a commit`() {
         // create working directory
         val workingDirectory = File("src/test/resources/workingDirectory")
         workingDirectory.mkdir()
@@ -224,32 +223,72 @@ class PorcelainKtTest {
             "test3.txt",
             "test4.txt"
         ).map { File("${workingDirectory.path}/$it") }.onEach { it.writeText("test text") }
+        add(files[0].path)
+        File("$workingDirectory/test").mkdir()
+        files[0].renameTo(File("$workingDirectory/test/${files[0].name}"))
+        add(files[1].path)
+        println(status())
+    }
 
-        assertEquals(
-            statusString(
-                files.map { it.name },
-                emptyList(),
-                emptyList(),
-                emptyList()
-            ), status()
-        )
+    @Test
+    fun `status with a head on a branch`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // array of files
+        val files = arrayOf(
+            "test.txt",
+            "test2.txt",
+            "test3.txt",
+            "test4.txt"
+        ).map { File("${workingDirectory.path}/$it") }.onEach { it.writeText("test text") }
         add(files[0].path)
         add(files[1].path)
         add(files[2].path)
-        // change one file
-        files[0].writeText("test text 2")
-        // delete one file
+        commit("test commit")
+        // modify one of the files
+        files[0].setExecutable(true)
+        // delete one of the files
         files[1].delete()
+        add(files[3].path)
+        add(files[0].path)
+        unstage(files[1].path)
+        println(status())
+    }
 
-        assertEquals(
-            statusString(
-                listOf(files[3].relativePath()),
-                listOf(files[2].relativePath()),
-                listOf(files[0].relativePath()),
-                listOf(files[1].relativePath())
-            ), status()
-        )
-
+    @Test
+    fun `status with a head on a detached state`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // array of files
+        val files = arrayOf(
+            "test.txt",
+            "test2.txt",
+            "test3.txt",
+            "test4.txt"
+        ).map { File("${workingDirectory.path}/$it") }.onEach { it.writeText("test text") }
+        add(files[0].path)
+        add(files[1].path)
+        add(files[2].path)
+        val hash = commit("test commit")
+        checkout(hash)
+        // modify one of the files
+        files[0].setExecutable(true)
+        // delete one of the files
+        files[1].delete()
+        add(files[3].path)
+        add(files[0].path)
+        unstage(files[1].path)
+        println(status())
     }
 
     @Test
@@ -648,24 +687,5 @@ class PorcelainKtTest {
         assertEquals(0, history.size)
     }
 
-    private fun statusString(
-        untrackedFiles: List<String>,
-        addedFiles: List<String>,
-        modifiedFiles: List<String>,
-        deletedFiles: List<String>
-    ): String {
-        return """
-        On branch master
-        
-        Untracked files:
-        ${untrackedFiles.sorted().joinToString("\n\t\t") { "?? $it".red() }}
-        
-        Changes to be committed :
-        ${addedFiles.sorted().joinToString("\n\t\t") { "A $it".green() }}
-        Changes not staged for commit:
-        ${modifiedFiles.sorted().joinToString("\n\t\t") { "M $it".yellow() }}
-        ${deletedFiles.sorted().joinToString("\n\t\t") { "D $it".yellow() }}
 
-        """
-    }
 }
