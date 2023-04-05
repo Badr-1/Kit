@@ -1,7 +1,6 @@
 package plumbing
 
 import porcelain.Config
-import porcelain.getMode
 import utils.*
 import java.io.*
 import java.security.MessageDigest
@@ -97,65 +96,6 @@ fun catFile(hashObject: String, option: String): String {
     }
 }
 
-/**
- * helper function for catFile to parse the content of a tree
- * @param contentWithoutHeader the content of the tree without the header
- * @return the parsed content of the tree
- */
-fun parseTreeContent(contentWithoutHeader: MutableList<Byte>): String {
-    /**
-     * format of entries in the tree:
-     * mode SP path NUL sha1
-     * mode: 6 bytes
-     * SP: 1 byte
-     * path: variable length
-     * NUL: 1 byte
-     * sha1: 20 bytes
-     * parse till the end of the content
-     * */
-    val entries = mutableListOf<TreeEntry>()
-    while (contentWithoutHeader.isNotEmpty()) {
-        val mode = contentWithoutHeader.subList(0, contentWithoutHeader.indexOf(32.toByte())).toByteArray()
-            .toString(Charsets.UTF_8)
-        contentWithoutHeader.subList(0, contentWithoutHeader.indexOf(32.toByte())).clear()
-        contentWithoutHeader.removeAt(0) // remove the space
-        val path = contentWithoutHeader.subList(0, contentWithoutHeader.indexOf(0.toByte())).toByteArray()
-            .toString(Charsets.UTF_8)
-        contentWithoutHeader.subList(0, contentWithoutHeader.indexOf(0.toByte()) + 1).clear()
-        val sha1 = contentWithoutHeader.subList(0, 20).joinToString("") { "%02x".format(it) }
-        contentWithoutHeader.subList(0, 20).clear()
-        entries.add(TreeEntry(mode, path, sha1))
-    }
-    return entries.joinToString("\n") {
-        "${it.mode} ${catFile(it.hash, "-t")} ${it.hash}\t${it.path}"
-    }
-}
-
-/**
- * gets the path of the object in the object database
- * @receiver the hash of the object
- * @return the path of the object in the object database
- */
-fun String.objectPath(): String {
-    return "${System.getProperty("user.dir")}/.kit/objects/${this.substring(0, 2)}/${this.substring(2)}"
-}
-
-/**
- * check if an object exists in the object database
- * @receiver the hash of the object
- * @return true if the object exists, false otherwise
- */
-fun String.objectExists(): Boolean {
-    return File(this.objectPath()).exists()
-}
-
-/**
- * data class to represent a tree entry
- * @param mode the mode of the entry
- * @param path the path of the entry
- * @param hash the hash of the entry
- */
-data class TreeEntry(val mode: String, val path: String, val hash: String)
 
 /**
  * @param directory the directory to write the tree for
@@ -215,41 +155,6 @@ fun writeTree(directory: String, write: Boolean = false): String {
 }
 
 /**
- * @param entries the list of entries to be added to the tree
- * @param write whether to write the tree to the object database or not
- * @return the sha1 hash of the tree
- */
-fun mkTree(entries: List<TreeEntry>, write: Boolean): String {
-    var entriesContent: ByteArray = byteArrayOf()
-    entries.forEach { entry ->
-        val entryContent =
-            entry.mode.toByteArray() + " ".toByteArray() + entry.path.toByteArray() + "\u0000".toByteArray() + entry.hash.hexStringToByteArray()
-        entriesContent += entryContent
-    }
-    val prefix = "tree ${entriesContent.size}\u0000"
-    val content = prefix.toByteArray(Charsets.UTF_8) + entriesContent
-    val sha1 = sha1(content)
-    if (write) {
-        val workingDirectory = System.getProperty("user.dir")
-        val path = sha1.objectPath()
-        val objectDatabase = File("${workingDirectory}/.kit/objects")
-        if (!objectDatabase.exists()) {
-            // print files in the current directory
-            throw Exception("The repository doesn't exist")
-        } else {
-            File(path).parentFile.mkdirs()
-        }
-        // compress the file content using zlib
-        val compressed =
-            Zlib.deflate(prefix.toByteArray() + entriesContent)
-        // write the compressed content to the file
-        File(path).writeBytes(compressed)
-    }
-    return sha1
-}
-
-
-/**
  * List the files in the index
  */
 fun lsFiles(): String {
@@ -306,6 +211,10 @@ fun hashObject(path: String, type: String = "blob", write: Boolean = false): Str
     return sha1
 }
 
+
+
+/********** helper functions **********/
+
 /**
  * Hashes the given bytes using sha1
  * @param bytes the bytes to be hashed
@@ -318,3 +227,102 @@ fun sha1(bytes: ByteArray): String {
     digest.update(bytes)
     return digest.digest().joinToString("") { "%02x".format(it) }
 }
+
+/**
+ * @param entries the list of entries to be added to the tree
+ * @param write whether to write the tree to the object database or not
+ * @return the sha1 hash of the tree
+ */
+fun mkTree(entries: List<TreeEntry>, write: Boolean): String {
+    var entriesContent: ByteArray = byteArrayOf()
+    entries.forEach { entry ->
+        val entryContent =
+            entry.mode.toByteArray() + " ".toByteArray() + entry.path.toByteArray() + "\u0000".toByteArray() + entry.hash.hexStringToByteArray()
+        entriesContent += entryContent
+    }
+    val prefix = "tree ${entriesContent.size}\u0000"
+    val content = prefix.toByteArray(Charsets.UTF_8) + entriesContent
+    val sha1 = sha1(content)
+    if (write) {
+        val workingDirectory = System.getProperty("user.dir")
+        val path = sha1.objectPath()
+        val objectDatabase = File("${workingDirectory}/.kit/objects")
+        if (!objectDatabase.exists()) {
+            // print files in the current directory
+            throw Exception("The repository doesn't exist")
+        } else {
+            File(path).parentFile.mkdirs()
+        }
+        // compress the file content using zlib
+        val compressed =
+            Zlib.deflate(prefix.toByteArray() + entriesContent)
+        // write the compressed content to the file
+        File(path).writeBytes(compressed)
+    }
+    return sha1
+}
+
+
+/**
+ * data class to represent a tree entry
+ * @param mode the mode of the entry
+ * @param path the path of the entry
+ * @param hash the hash of the entry
+ */
+data class TreeEntry(val mode: String, val path: String, val hash: String)
+
+
+/**
+ * helper function for catFile to parse the content of a tree
+ * @param contentWithoutHeader the content of the tree without the header
+ * @return the parsed content of the tree
+ */
+fun parseTreeContent(contentWithoutHeader: MutableList<Byte>): String {
+    /**
+     * format of entries in the tree:
+     * mode SP path NUL sha1
+     * mode: 6 bytes
+     * SP: 1 byte
+     * path: variable length
+     * NUL: 1 byte
+     * sha1: 20 bytes
+     * parse till the end of the content
+     * */
+    val entries = mutableListOf<TreeEntry>()
+    while (contentWithoutHeader.isNotEmpty()) {
+        val mode = contentWithoutHeader.subList(0, contentWithoutHeader.indexOf(32.toByte())).toByteArray()
+            .toString(Charsets.UTF_8)
+        contentWithoutHeader.subList(0, contentWithoutHeader.indexOf(32.toByte())).clear()
+        contentWithoutHeader.removeAt(0) // remove the space
+        val path = contentWithoutHeader.subList(0, contentWithoutHeader.indexOf(0.toByte())).toByteArray()
+            .toString(Charsets.UTF_8)
+        contentWithoutHeader.subList(0, contentWithoutHeader.indexOf(0.toByte()) + 1).clear()
+        val sha1 = contentWithoutHeader.subList(0, 20).joinToString("") { "%02x".format(it) }
+        contentWithoutHeader.subList(0, 20).clear()
+        entries.add(TreeEntry(mode, path, sha1))
+    }
+    return entries.joinToString("\n") {
+        "${it.mode} ${catFile(it.hash, "-t")} ${it.hash}\t${it.path}"
+    }
+}
+
+
+/**
+ * gets the path of the object in the object database
+ * @receiver the hash of the object
+ * @return the path of the object in the object database
+ */
+fun String.objectPath(): String {
+    return "${System.getProperty("user.dir")}/.kit/objects/${this.substring(0, 2)}/${this.substring(2)}"
+}
+
+/**
+ * check if an object exists in the object database
+ * @receiver the hash of the object
+ * @return true if the object exists, false otherwise
+ */
+fun String.objectExists(): Boolean {
+    return File(this.objectPath()).exists()
+}
+
+/********** helper functions **********/

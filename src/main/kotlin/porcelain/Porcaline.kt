@@ -3,84 +3,10 @@ package porcelain
 import plumbing.*
 import utils.*
 import java.io.File
-import java.nio.file.Files
 import java.time.*
 import java.util.*
-import kotlin.io.path.Path
 
-/**
- * a singleton object that represents the config file
- */
-object Config {
-    /**
-     * consists of the following:
-     * - sections, eg [ core ]
-     * - keys, eg repositoryformatversion
-     * - values, eg 0
-     * */
-    private fun getConfigFile() = File("${System.getProperty("user.dir")}/.kit/config")
-    private val sections = mutableListOf("core") // to be updated when more sections are added
-    private val values = mutableMapOf(
-        "core" to mutableMapOf(
-            "repositoryformatversion" to "0", "filemode" to "true", "bare" to "false", "logallrefupdates" to "true"
-        )
-    )
 
-    /**
-     * unset the config file to its default values
-     */
-    fun unset() {
-        sections.removeIf { it != "core" }
-    }
-
-    /**
-     * write the config file
-     */
-    fun write() {
-        getConfigFile().createNewFile()
-        getConfigFile().writeText("")
-        for (section in sections) {
-            getConfigFile().appendText("[$section]\n")
-            for ((key, value) in values[section]!!) {
-                getConfigFile().appendText("\t$key = $value\n")
-            }
-        }
-    }
-
-    /**
-     * set a value in the config file and write it
-     * @param sectionWithKey the section and key separated by a dot, e.g. core.repositoryformatversion
-     * @param value the value to be set
-     */
-    fun set(sectionWithKey: String, value: String) {
-        val section = sectionWithKey.split(".")[0]
-        val key = sectionWithKey.split(".")[1]
-        if (!sections.contains(section)) {
-            sections.add(section)
-            values[section] = mutableMapOf()
-        }
-        values[section]!![key] = value
-        write()
-    }
-
-    /**
-     * get a value from the config file
-     * @param sectionWithKey the section and key separated by a dot, e.g. core.repositoryformatversion
-     * @return the value
-     */
-    fun get(sectionWithKey: String): String {
-        val section = sectionWithKey.split(".")[0]
-        val key = sectionWithKey.split(".")[1]
-        if (section == "user" && (key == "name" || key == "email")) {
-            if (!sections.contains(section)) {
-                sections.add(section)
-                values[section] = mutableMapOf()
-            }
-            if (values[section]!![key] == null) values[section]!![key] = "Kit $key"
-        }
-        return values[section]!![key]!!
-    }
-}
 
 /**
  * Initialize a new repository or reinitialize an existing one
@@ -137,23 +63,6 @@ fun add(filePath: String) {
     // update the index
     val mode = getMode(file)
     updateIndex(filePath, "-a", hashObject(filePath, write = true), mode)
-}
-
-/**
- * helper function that returns the mode of a file
- * @param file the file
- * @return the mode based on git's documentation
- */
-fun getMode(file: File): String {
-    val mode = when {
-        // check if the file is executable
-        file.canExecute() -> "100755"
-        // check if the file is a symlink
-        Files.isSymbolicLink(Path(file.path)) -> "120000"
-        // then it's a normal file
-        else -> "100644"
-    }
-    return mode
 }
 
 /**
@@ -264,52 +173,6 @@ fun status(): String {
     return statusString(untrackedFiles, stagedChanges, unStagedChanges)
 }
 
-/**
- * helper function that returns the status of the repository as a string
- * @param untrackedFiles the list of untracked files
- * @param staged the list of staged changes
- * @param unStaged the list of unStaged changes
- * @return the status of the repository as a string
- */
-fun statusString(
-    untrackedFiles: List<String>,
-    staged: List<String>,
-    unStaged: List<String>,
-): String {
-    return """
-        On branch master
-        
-        Untracked files:
-        ${untrackedFiles.sorted().joinToString("\n\t\t") { "?? $it" }}
-        
-        Changes to be committed :
-        ${staged.sorted().joinToString("\n\t\t") { it }}
-        
-        Changes not staged for commit:
-        ${unStaged.sorted().joinToString("\n\t\t") { it }}
-
-        """
-}
-
-/**
- * helper function that returns the list of files in the HEAD commit tree
- * @return the list of files in the HEAD commit tree
- */
-fun getHeadCommitTreeFiles(): MutableList<TreeEntry> {
-    val head = getHead()
-    return if (!head.matches(Regex("[0-9a-f]{40}"))) {
-        return try {
-            val branch = getBranchCommit(head)
-            getTreeEntries(getTreeHash(branch)).toMutableList()
-        } catch (e: Exception) {
-            mutableListOf()
-        }
-    } else {
-        getTreeEntries(getTreeHash(head)).toMutableList()
-    }
-
-}
-
 // TODO think about adding amend option
 /**
  * commit the current index
@@ -359,42 +222,6 @@ fun checkout(ref: String) {
     // change the HEAD
     File("${System.getProperty("user.dir")}/.kit/HEAD").writeText(commitHash)
     updateWorkingDirectory(commitHash)
-}
-
-/**
- * this is a helper function for the actual log command
- * @return the list of commits
- */
-fun getHistory(): List<String> {
-    val commits = mutableListOf<String>()
-    val head = getHead()
-    var it = head
-    if (!head.matches(Regex("[0-9a-f]{40}"))) { // if the head is a branch
-        try {
-            it = getBranchCommit(head) // throw an exception if the branch doesn't exist
-        } catch (e: Exception) {
-            return commits // return an empty list
-        }
-    }
-    do {
-        commits.add(it)
-        it = getParent(it)
-    } while (it != "")
-
-    return commits
-}
-
-/**
- * this is a helper function for the actual log command
- * @return the list of branches
- */
-fun getRefs(): MutableMap<String, String> {
-    val refs = mutableMapOf<String, String>()
-    val branches = File("${System.getProperty("user.dir")}/.kit/refs/heads").walk().filter { it.isFile }.toList()
-    for (branch in branches) {
-        refs[branch.relativePath("${System.getProperty("user.dir")}/.kit/refs/heads")] = branch.readText()
-    }
-    return refs
 }
 
 /**
@@ -448,64 +275,6 @@ fun log() {
 }
 
 /**
- * calculate the difference between two dates
- * @param startDate the start date
- * @param endDate the end date
- * @return the difference between the two dates in the most significant time unit
- */
-fun calculateDateTimeDifference(startDate: LocalDateTime, endDate: LocalDateTime): String {
-    val duration = Duration.between(startDate, endDate)
-    val period = Period.between(startDate.toLocalDate(), endDate.toLocalDate())
-
-    val years = period.years
-    val months = period.months
-    val days = period.days
-
-    val hours = duration.toHours() % 24
-    val minutes = duration.toMinutes() % 60
-    val seconds = duration.seconds % 60
-
-    // return the most significant time unit
-    return when {
-        years > 0 -> "$years year${if (years > 1) "s" else ""} ago"
-        months > 0 -> "$months month${if (months > 1) "s" else ""} ago"
-        days > 0 -> "$days day${if (days > 1) "s" else ""} ago"
-        hours > 0 -> "$hours hour${if (hours > 1) "s" else ""} ago"
-        minutes > 0 -> "$minutes minute${if (minutes > 1) "s" else ""} ago"
-        seconds > 0 -> "$seconds second${if (seconds > 1) "s" else ""} ago"
-        else -> "just now"
-    }
-}
-
-/**
- * get the parent of a commit
- * @param commitHash the hash of the commit
- * @return the hash of the parent commit
- */
-fun getParent(commitHash: String): String {
-    val content = catFile(commitHash, "-p")
-    return if (content.contains("parent")) {
-        content.split("\n")[1].split(" ")[1]
-    } else {
-        ""
-    }
-}
-
-/**
- * get the commit hash of a branch that is pointed to by HEAD
- */
-fun getHead(): String {
-    val head = File("${System.getProperty("user.dir")}/.kit/HEAD").readText()
-    return if (head.contains("ref: refs/heads/")) {
-        val branch =
-            File(System.getProperty("user.dir") + "/.kit/" + head.split(" ")[1]).relativePath("${System.getProperty("user.dir")}/.kit/refs/heads")
-        branch
-    } else {
-        head
-    }
-}
-
-/**
  * create a new branch
  * @param branchName the name of the branch
  * @param ref the commit hash to point to
@@ -538,6 +307,11 @@ fun branch(branchName: String, ref: String = "HEAD") {
     }
 
 }
+
+
+
+
+/********** helper functions **********/
 
 /**
  * get the commit hash of a branch
@@ -607,16 +381,145 @@ fun getTreeEntries(treeHash: String): List<TreeEntry> {
 
 
 /**
- * colorize the output in blue
+ * helper function that returns the status of the repository as a string
+ * @param untrackedFiles the list of untracked files
+ * @param staged the list of staged changes
+ * @param unStaged the list of unStaged changes
+ * @return the status of the repository as a string
  */
-fun String.red() = "\u001B[31m$this\u001B[0m"
+fun statusString(
+    untrackedFiles: List<String>,
+    staged: List<String>,
+    unStaged: List<String>,
+): String {
+    return """
+        On branch master
+        
+        Untracked files:
+        ${untrackedFiles.sorted().joinToString("\n\t\t") { "?? $it" }}
+        
+        Changes to be committed :
+        ${staged.sorted().joinToString("\n\t\t") { it }}
+        
+        Changes not staged for commit:
+        ${unStaged.sorted().joinToString("\n\t\t") { it }}
+
+        """
+}
 
 /**
- * colorize the output in green
+ * helper function that returns the list of files in the HEAD commit tree
+ * @return the list of files in the HEAD commit tree
  */
-fun String.green() = "\u001B[32m$this\u001B[0m"
+fun getHeadCommitTreeFiles(): MutableList<TreeEntry> {
+    val head = getHead()
+    return if (!head.matches(Regex("[0-9a-f]{40}"))) {
+        return try {
+            val branch = getBranchCommit(head)
+            getTreeEntries(getTreeHash(branch)).toMutableList()
+        } catch (e: Exception) {
+            mutableListOf()
+        }
+    } else {
+        getTreeEntries(getTreeHash(head)).toMutableList()
+    }
+
+}
+
 
 /**
- * colorize the output in yellow
+ * get the commit hash of a branch that is pointed to by HEAD
  */
-fun String.yellow() = "\u001B[33m$this\u001B[0m"
+fun getHead(): String {
+    val head = File("${System.getProperty("user.dir")}/.kit/HEAD").readText()
+    return if (head.contains("ref: refs/heads/")) {
+        val branch =
+            File(System.getProperty("user.dir") + "/.kit/" + head.split(" ")[1]).relativePath("${System.getProperty("user.dir")}/.kit/refs/heads")
+        branch
+    } else {
+        head
+    }
+}
+
+/**
+ * this is a helper function for the actual log command
+ * @return the list of commits
+ */
+fun getHistory(): List<String> {
+    val commits = mutableListOf<String>()
+    val head = getHead()
+    var it = head
+    if (!head.matches(Regex("[0-9a-f]{40}"))) { // if the head is a branch
+        try {
+            it = getBranchCommit(head) // throw an exception if the branch doesn't exist
+        } catch (e: Exception) {
+            return commits // return an empty list
+        }
+    }
+    do {
+        commits.add(it)
+        it = getParent(it)
+    } while (it != "")
+
+    return commits
+}
+
+/**
+ * calculate the difference between two dates
+ * @param startDate the start date
+ * @param endDate the end date
+ * @return the difference between the two dates in the most significant time unit
+ */
+fun calculateDateTimeDifference(startDate: LocalDateTime, endDate: LocalDateTime): String {
+    val duration = Duration.between(startDate, endDate)
+    val period = Period.between(startDate.toLocalDate(), endDate.toLocalDate())
+
+    val years = period.years
+    val months = period.months
+    val days = period.days
+
+    val hours = duration.toHours() % 24
+    val minutes = duration.toMinutes() % 60
+    val seconds = duration.seconds % 60
+
+    // return the most significant time unit
+    return when {
+        years > 0 -> "$years year${if (years > 1) "s" else ""} ago"
+        months > 0 -> "$months month${if (months > 1) "s" else ""} ago"
+        days > 0 -> "$days day${if (days > 1) "s" else ""} ago"
+        hours > 0 -> "$hours hour${if (hours > 1) "s" else ""} ago"
+        minutes > 0 -> "$minutes minute${if (minutes > 1) "s" else ""} ago"
+        seconds > 0 -> "$seconds second${if (seconds > 1) "s" else ""} ago"
+        else -> "just now"
+    }
+}
+
+/**
+ * get the parent of a commit
+ * @param commitHash the hash of the commit
+ * @return the hash of the parent commit
+ */
+fun getParent(commitHash: String): String {
+    val content = catFile(commitHash, "-p")
+    return if (content.contains("parent")) {
+        content.split("\n")[1].split(" ")[1]
+    } else {
+        ""
+    }
+}
+
+
+/**
+ * this is a helper function for the actual log command
+ * @return the list of branches
+ */
+fun getRefs(): MutableMap<String, String> {
+    val refs = mutableMapOf<String, String>()
+    val branches = File("${System.getProperty("user.dir")}/.kit/refs/heads").walk().filter { it.isFile }.toList()
+    for (branch in branches) {
+        refs[branch.relativePath("${System.getProperty("user.dir")}/.kit/refs/heads")] = branch.readText()
+    }
+    return refs
+}
+
+/****************************************/

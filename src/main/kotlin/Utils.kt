@@ -1,6 +1,8 @@
 package utils
 import java.io.File
+import java.nio.file.Files
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.Path
 
 /**
  * Runs the given command and returns the output
@@ -42,3 +44,35 @@ fun String.hexStringToByteArray(): ByteArray {
  * @param path the path to which the relative path is calculated
  */
 fun File.relativePath(path: String = System.getProperty("user.dir")): String = this.relativeTo(File(path)).path
+
+/**
+ * helper function that returns the mode of a file
+ * @param file the file
+ * @return the mode based on git's documentation
+ */
+fun getMode(file: File): String {
+    val mode = when {
+        // check if the file is executable
+        file.canExecute() -> "100755"
+        // check if the file is a symlink
+        Files.isSymbolicLink(Path(file.path)) -> "120000"
+        // then it's a normal file
+        else -> "100644"
+    }
+    return mode
+}
+
+/**
+ * colorize the output in blue
+ */
+fun String.red() = "\u001B[31m$this\u001B[0m"
+
+/**
+ * colorize the output in green
+ */
+fun String.green() = "\u001B[32m$this\u001B[0m"
+
+/**
+ * colorize the output in yellow
+ */
+fun String.yellow() = "\u001B[33m$this\u001B[0m"
