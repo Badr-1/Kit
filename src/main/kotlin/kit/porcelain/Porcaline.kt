@@ -410,16 +410,12 @@ fun statusString(
     }
     return """
         $onWhat
-        
         Untracked files:
         ${untrackedFiles.sorted().joinToString("\n\t\t") { "?? $it".red() }}
-        
         Changes to be committed :
         ${staged.sorted().joinToString("\n\t\t") { it.green() }}
-        
         Changes not staged for commit:
         ${unStaged.sorted().joinToString("\n\t\t") { it.yellow() }}
-
         """
 }
 
