@@ -1,7 +1,7 @@
-package plumbing
+package kit.plumbing
 
-import porcelain.Config
-import utils.*
+import kit.porcelain.Config
+import kit.utils.*
 import java.io.*
 import java.security.MessageDigest
 

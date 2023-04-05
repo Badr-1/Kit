@@ -1,4 +1,4 @@
-package plumbing
+package kit.plumbing
 
 import java.io.ByteArrayOutputStream
 import java.util.zip.*

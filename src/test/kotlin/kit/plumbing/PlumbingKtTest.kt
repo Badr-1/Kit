@@ -1,4 +1,4 @@
-package plumbing
+package kit.plumbing
 
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertThrows
-import plumbing.GitIndex.clearIndex
-import plumbing.GitIndex.readIndex
-import utils.*
+import kit.plumbing.GitIndex.clearIndex
+import kit.plumbing.GitIndex.readIndex
+import kit.utils.*
 import java.io.File
 import kotlin.random.Random
 import kotlin.test.fail

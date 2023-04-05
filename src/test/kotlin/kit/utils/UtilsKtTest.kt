@@ -1,7 +1,8 @@
+package kit.utils
+
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
-import utils.runCommand
 
 class UtilsKtTest {
 
