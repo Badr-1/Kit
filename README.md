@@ -1,4 +1,7 @@
 # Git A Home-Made Recipe With Kotlin
+<div align="center">
+    <img src="images/logo.png">
+</div>
 
 ## About
 
@@ -6,7 +9,7 @@ This Project is My Attempt To Reimplement Git With Kotlin.
 <br> Why? I See You Wandering... Why Not?\
 I've Been Reading About Git For Quite Some Time And have Explained It To Many Of My Peers.\
 And While I Was Learning Kotlin With JetBrains Academy, One Of The Projects Was About Version Control System, especially
-Git, But The Implementation Level Wasn't That Interesting, After That I came Across [CodeCrafters](https://codecrafters.io/), 
+Git, But The Implementation Level Wasn't That Interesting, After That I came Across [CodeCrafters](https://codecrafters.io/),
 They have modules for building some projects with theme `Build Your Own`, and one of them was `Build Your Own Git`,
 but it didn't also catch my attention, and they didn't have a kotlin version, so I decided to implement it myself, and make it compatible with git and I named it `kit (kotlin implementation of git).`\
 my intention for this project was to learn more about git, and build a decent project with kotlin considering that it's my favorite language.\
@@ -27,6 +30,12 @@ git model is based on four objects:
 
 I'll be implementing plumbing commands at first, then I'll implement porcelain commands.
 
+### Next
+- Add more prints to display what's going on in these commands:
+  - [ ] init
+  - [ ] checkout
+  - [ ] branch
+
 ## Plumbing Commands
 - [x] hash-object
 - [x] cat-file
@@ -41,7 +50,38 @@ I'll be implementing plumbing commands at first, then I'll implement porcelain c
 - [x] unstage
 - [x] commit
 - [x] log
-- [x] status  
+- [x] status
 - [x] checkout
 - [x] branch
 - [x] config
+## Screenshots
+
+### Init a repo creating a file and checking status
+
+<div align="center">
+    <img src="images/kit-init-status.png">
+</div>
+
+### Adding file to index and configuring user then commiting and log to see the commit
+
+<div align="center">
+    <img src="images/kit-add-commit.png">
+</div>
+
+### Create a branch and checkout to it
+
+<div align="center">
+    <img src="images/kit-branch-checkout.png">
+</div>
+
+### Convert repo to git repo
+
+<div align="center">
+    <img src="images/kit-convert-to-git.png">
+</div>
+
+### Help
+
+<div align="center">
+    <img src="images/kit-help.png">
+</div>
