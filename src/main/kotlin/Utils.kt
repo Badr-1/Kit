@@ -37,4 +37,8 @@ fun String.hexStringToByteArray(): ByteArray {
     return byteArray
 }
 
+/**
+ * returns the relative path of this file to the given path
+ * @param path the path to which the relative path is calculated
+ */
 fun File.relativePath(path: String = System.getProperty("user.dir")): String = this.relativeTo(File(path)).path
