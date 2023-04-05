@@ -49,10 +49,10 @@ fun commitTree(treeHash: String, commitMessage: String, parentCommit: String = "
     val tree = "tree $treeHash\n"
     val parent = if (parentCommit.isEmpty()) parentCommit else "parent $parentCommit\n"
     val author =
-        "author ${Config.get("user.name")} ${Config.get("user.email")} ${System.currentTimeMillis() / 1000} +0200\n"
+        "author ${Config.get("user.name")} <${Config.get("user.email")}> ${System.currentTimeMillis() / 1000} +0200\n"
     val committer =
-        "committer ${Config.get("user.name")} ${Config.get("user.email")} ${System.currentTimeMillis() / 1000} +0200\n"
-    val message = commitMessage.ifEmpty { throw Exception("commit message is empty") }
+        "committer ${Config.get("user.name")} <${Config.get("user.email")}> ${System.currentTimeMillis() / 1000} +0200\n\n"
+    val message = commitMessage.ifEmpty { throw Exception("commit message is empty") } + "\n"
     val content = tree + parent + author + committer + message
     return hashObject(content, type = "commit", write = true)
 }
@@ -91,6 +91,7 @@ fun catFile(hashObject: String, option: String): String {
             } else
                 contentWithoutHeader.apply { println(this) }
         }
+
         else -> throw IllegalArgumentException("usage: cat-file [-t | -s | -p] <object>")
     }
 }
@@ -383,7 +384,7 @@ fun getContent(hashObject: String): String {
     val contentWithoutHeader = contentStr.substringAfter("\u0000")
 
 
-    return  if (type == "tree") {
+    return if (type == "tree") {
         val list = content.toMutableList()
         // remove till the first NUL
         list.subList(0, list.indexOf(0.toByte()) + 1).clear()

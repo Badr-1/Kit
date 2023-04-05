@@ -831,7 +831,7 @@ class PlumbingKtTest {
         val commitContent =
             Zlib.inflate(File(commit.objectPath()).readBytes()).toString(Charsets.UTF_8).substringAfter("\u0000")
         assertEquals("tree $tree", commitContent.split("\n")[0])
-        assertEquals("test commit", commitContent.split("\n")[3])
+        assertEquals("test commit", commitContent.split("\n")[4])
 
         // clean up
         clearIndex()
@@ -965,9 +965,9 @@ class PlumbingKtTest {
         assert(commit.objectExists())
         // cat the file
         val content = catFile(commit, "-p")
-        assertEquals(4, content.split("\n").size)
+        assertEquals(6, content.split("\n").size)
         val size = catFile(commit, "-s")
-        assertEquals("146", size)
+        assertEquals("152", size)
         val type = catFile(commit, "-t")
         assertEquals("commit", type)
 
