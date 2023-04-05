@@ -3,8 +3,16 @@ package plumbing
 import java.io.ByteArrayOutputStream
 import java.util.zip.*
 
+/**
+ * Zlib compression and decompression.
+ */
 object Zlib {
 
+    /**
+     * Compresses the given byte array using the Zlib algorithm.
+     * @param content The byte array to compress.
+     * @return The compressed byte array.
+     */
     @JvmStatic
     fun deflate(content: ByteArray): ByteArray {
         val deflater = Deflater()
@@ -20,6 +28,11 @@ object Zlib {
         return outputStream.toByteArray()
     }
 
+    /**
+     * Decompresses the given byte array using the Zlib algorithm.
+     * @param content The byte array to decompress.
+     * @return The decompressed byte array.
+     */
     @JvmStatic
     fun inflate(content: ByteArray): ByteArray {
         val inflater = Inflater()
