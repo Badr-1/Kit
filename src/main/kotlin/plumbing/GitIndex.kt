@@ -7,6 +7,9 @@ import java.nio.file.Files
 import java.time.Instant
 import kotlin.experimental.and
 
+/**
+ * Singleton class for managing the Git index file
+ */
 object GitIndex {
     private val entries = mutableListOf<GitIndexEntry>()
     private lateinit var signature: String
@@ -14,11 +17,16 @@ object GitIndex {
     private var entryCount: Int = 0
     private val indexFile = File("${System.getProperty("user.dir")}/.kit/index")
 
-    // get entries count
+    /**
+     * gets count of entries in the index file
+     */
     fun getEntryCount(): Int {
         return entryCount
     }
 
+    /**
+     * data class for storing index file entries
+     */
     data class GitIndexEntry(
         var ctimeSeconds: Int,
         var ctimeNanoSeconds: Int,
@@ -35,6 +43,9 @@ object GitIndex {
         val path: String,
         val padding: Int
     ) {
+        /**
+         * writes the entry to the index file
+         */
         fun write() {
             indexFile.appendBytes(ByteBuffer.allocate(4).putInt(ctimeSeconds).array())
             indexFile.appendBytes(ByteBuffer.allocate(4).putInt(ctimeNanoSeconds).array())
@@ -54,13 +65,21 @@ object GitIndex {
     }
 
     init {
-        refreshIndex()
+        readIndex()
     }
+
+    /**
+     * clear variables after index file is deleted
+     */
     fun clearIndex() {
         entries.clear()
         entryCount = 0
     }
-    fun refreshIndex() {
+
+    /**
+     * reads the index file and stores the entries in the entries list
+     */
+    fun readIndex() {
         if (indexFile.exists()) {
             val indexBytes: ByteArray = indexFile.readBytes()
             var offset = 0
@@ -69,11 +88,6 @@ object GitIndex {
             version = (ByteBuffer.wrap(indexBytes.copyOfRange(4, 8)).int)
             entryCount = (ByteBuffer.wrap(indexBytes.copyOfRange(8, 12)).int)
             offset += 12
-
-            println("[header]")
-            println("\tsignature: $signature")
-            println("\tversion: $version")
-            println("\tentryCount: $entryCount")
 
             // The next section of the index file consists of entry metadata
             for (i in 0 until entryCount) {
@@ -131,25 +145,8 @@ object GitIndex {
                     )
                 )
             }
-            entries.forEachIndexed { index, entry ->
-                println("[entry ${index + 1}]")
-                println("\tctime: ${entry.ctimeSeconds + entry.ctimeNanoSeconds / 1000000000.0}")
-                println("\tmtime: ${entry.mtimeSeconds + entry.mtimeNanoSeconds / 1000000000.0}")
-                println("\tdev: ${entry.dev}")
-                println("\tino: ${entry.ino}")
-                println("\tmode: ${entry.mode}")
-                println("\tuid: ${entry.uid}")
-                println("\tgid: ${entry.gid}")
-                println("\tfileSize: ${entry.fileSize}")
-                println("\tsha1: ${entry.sha1}")
-                println("\tflags: ${entry.flags}")
-                println("\tpath: ${entry.path}")
-            }
-
             // The final section of the index file consists of the SHA1 of the index file
-            val sha1 = indexBytes.copyOfRange(offset, offset + 20).joinToString("") { "%02x".format(it) }
-            println("[sha1]")
-            println("\tsha1: $sha1")
+            indexBytes.copyOfRange(offset, offset + 20).joinToString("") { "%02x".format(it) }
         } else {
             indexFile.createNewFile()
             signature = "DIRC"
@@ -164,10 +161,19 @@ object GitIndex {
         }
     }
 
+    /**
+     * list all files in the index
+     */
     fun list(): String {
         return entries.joinToString("\n") { it.path }
     }
 
+    /**
+     * add a file to the index entries
+     * @param file the file to add
+     * @param sha1 the sha1 of the file
+     * @param cacheInfo the cache info of the file
+     */
     fun add(file: File, sha1: String, cacheInfo: String) {
         // check if the file is already in the index
         if (entries.any { it.path == file.relativePath() }) {
@@ -197,6 +203,10 @@ object GitIndex {
         entryCount++
     }
 
+    /**
+     * remove a file from the index entries
+     * @param file the file to remove
+     */
     fun remove(file: File) {
         // check if the file is in the index
         if (entries.any { it.path == file.relativePath() }) {
@@ -219,14 +229,30 @@ object GitIndex {
         }
     }
 
+    /**
+     * get index entry by path
+     * @param path path of the file
+     * @return index entry
+     */
     fun get(path: String): GitIndexEntry? {
         return entries.firstOrNull { it.path == path }
     }
 
+    /**
+     * get all index entries
+     * @return list of index entries
+     */
     fun entries(): List<GitIndexEntry> {
         return entries.subList(0, entries.size)
     }
 
+    /**
+     * create a new index entry
+     * @param file file to be added
+     * @param sha1 sha1 of the file
+     * @param cacheInfo cache info of the file
+     * @return index entry
+     */
     private fun makeEntry(file: File, sha1: String, cacheInfo: String): GitIndexEntry {
         val attr = Files.readAttributes(file.toPath(), "unix:*")
         val creationTime = Instant.parse("${attr["creationTime"]!!}").epochSecond

@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import plumbing.GitIndex.clearIndex
-import plumbing.GitIndex.refreshIndex
+import plumbing.GitIndex.readIndex
 import utils.*
 import java.io.File
 import kotlin.random.Random
@@ -367,7 +367,7 @@ class PlumbingKtTest {
         updateIndex(file.path, "-a", hashObject(file.path, write = true), "100644")
 
         // check if the file was written to the index
-        refreshIndex() // this is a refresh of the index
+        readIndex() // this is a refresh of the index
 
         val indexFile = File("src/test/resources/workingDirectory/.kit/index")
         assertTrue(indexFile.exists())
