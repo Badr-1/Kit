@@ -8,6 +8,9 @@ import java.time.*
 import java.util.*
 import kotlin.io.path.Path
 
+/**
+ * a singleton object that represents the config file
+ */
 object Config {
     /**
      * consists of the following:
@@ -23,10 +26,16 @@ object Config {
         )
     )
 
+    /**
+     * unset the config file to its default values
+     */
     fun unset() {
         sections.removeIf { it != "core" }
     }
 
+    /**
+     * write the config file
+     */
     fun write() {
         getConfigFile().createNewFile()
         getConfigFile().writeText("")
@@ -38,6 +47,11 @@ object Config {
         }
     }
 
+    /**
+     * set a value in the config file and write it
+     * @param sectionWithKey the section and key separated by a dot, e.g. core.repositoryformatversion
+     * @param value the value to be set
+     */
     fun set(sectionWithKey: String, value: String) {
         val section = sectionWithKey.split(".")[0]
         val key = sectionWithKey.split(".")[1]
@@ -49,6 +63,11 @@ object Config {
         write()
     }
 
+    /**
+     * get a value from the config file
+     * @param sectionWithKey the section and key separated by a dot, e.g. core.repositoryformatversion
+     * @return the value
+     */
     fun get(sectionWithKey: String): String {
         val section = sectionWithKey.split(".")[0]
         val key = sectionWithKey.split(".")[1]
@@ -63,7 +82,11 @@ object Config {
     }
 }
 
-
+/**
+ * Initialize a new repository or reinitialize an existing one
+ * @param repositoryName the name of the repository, if empty the current directory will be used
+ * @return a message indicating the result of the operation
+ */
 fun init(repositoryName: String = ""): String {
     var path = System.getProperty("user.dir")
     if (repositoryName.isNotEmpty()) {
@@ -93,6 +116,10 @@ fun init(repositoryName: String = ""): String {
     return "Initialized empty Kit repository in ${File("${path}.kit").absolutePath}"
 }
 
+/**
+ * Add file to staging area
+ * @param filePath the path of the file to be added
+ */
 fun add(filePath: String) {
     // check if the file exists
     if (!File(filePath).exists()) {
@@ -112,6 +139,11 @@ fun add(filePath: String) {
     updateIndex(filePath, "-a", hashObject(filePath, write = true), mode)
 }
 
+/**
+ * helper function that returns the mode of a file
+ * @param file the file
+ * @return the mode based on git's documentation
+ */
 fun getMode(file: File): String {
     val mode = when {
         // check if the file is executable
@@ -124,6 +156,10 @@ fun getMode(file: File): String {
     return mode
 }
 
+/**
+ * Remove file from staging area
+ * @param filePath the path of the file to be removed
+ */
 fun unstage(filePath: String) {
     // check if the file is in the working directory
     if (!File(filePath).absolutePath.startsWith(File(System.getProperty("user.dir")).absolutePath)) {
@@ -136,6 +172,10 @@ fun unstage(filePath: String) {
     updateIndex(filePath, "-d")
 }
 
+/**
+ * return the status of the repository
+ * @return the status of the repository
+ */
 fun status(): String {
     // get all the files in the working directory except the .kit directory
     val workingDirectoryFiles =
@@ -224,6 +264,13 @@ fun status(): String {
     return statusString(untrackedFiles, stagedChanges, unStagedChanges)
 }
 
+/**
+ * helper function that returns the status of the repository as a string
+ * @param untrackedFiles the list of untracked files
+ * @param staged the list of staged changes
+ * @param unStaged the list of unStaged changes
+ * @return the status of the repository as a string
+ */
 fun statusString(
     untrackedFiles: List<String>,
     staged: List<String>,
@@ -244,6 +291,10 @@ fun statusString(
         """
 }
 
+/**
+ * helper function that returns the list of files in the HEAD commit tree
+ * @return the list of files in the HEAD commit tree
+ */
 fun getHeadCommitTreeFiles(): MutableList<TreeEntry> {
     val head = getHead()
     return if (!head.matches(Regex("[0-9a-f]{40}"))) {
@@ -260,6 +311,11 @@ fun getHeadCommitTreeFiles(): MutableList<TreeEntry> {
 }
 
 // TODO think about adding amend option
+/**
+ * commit the current index
+ * @param message the commit message
+ * @return the commit hash
+ */
 fun commit(message: String): String {
     val head = getHead()
     val parent = when {
@@ -281,6 +337,11 @@ fun commit(message: String): String {
     return commitHash
 }
 
+/**
+ * checkout HEAD to a specific commit or branch
+ * @param ref the commit hash or branch name
+ * @throws Exception if the ref is not a commit hash or a branch name
+ */
 fun checkout(ref: String) {
     // ref could be a commit hash or a branch name
     val commitHash = when {
@@ -300,7 +361,10 @@ fun checkout(ref: String) {
     updateWorkingDirectory(commitHash)
 }
 
-// this is a helper function for the actual log command
+/**
+ * this is a helper function for the actual log command
+ * @return the list of commits
+ */
 fun getHistory(): List<String> {
     val commits = mutableListOf<String>()
     val head = getHead()
@@ -320,6 +384,10 @@ fun getHistory(): List<String> {
     return commits
 }
 
+/**
+ * this is a helper function for the actual log command
+ * @return the list of branches
+ */
 fun getRefs(): MutableMap<String, String> {
     val refs = mutableMapOf<String, String>()
     val branches = File("${System.getProperty("user.dir")}/.kit/refs/heads").walk().filter { it.isFile }.toList()
@@ -329,6 +397,10 @@ fun getRefs(): MutableMap<String, String> {
     return refs
 }
 
+/**
+ * log the history of the repository
+ * it traverses from the HEAD commit to the first commit
+ */
 fun log() {
     val commits = getHistory()
     if (commits.isEmpty())
@@ -375,6 +447,12 @@ fun log() {
     }
 }
 
+/**
+ * calculate the difference between two dates
+ * @param startDate the start date
+ * @param endDate the end date
+ * @return the difference between the two dates in the most significant time unit
+ */
 fun calculateDateTimeDifference(startDate: LocalDateTime, endDate: LocalDateTime): String {
     val duration = Duration.between(startDate, endDate)
     val period = Period.between(startDate.toLocalDate(), endDate.toLocalDate())
@@ -399,6 +477,11 @@ fun calculateDateTimeDifference(startDate: LocalDateTime, endDate: LocalDateTime
     }
 }
 
+/**
+ * get the parent of a commit
+ * @param commitHash the hash of the commit
+ * @return the hash of the parent commit
+ */
 fun getParent(commitHash: String): String {
     val content = catFile(commitHash, "-p")
     return if (content.contains("parent")) {
@@ -408,6 +491,9 @@ fun getParent(commitHash: String): String {
     }
 }
 
+/**
+ * get the commit hash of a branch that is pointed to by HEAD
+ */
 fun getHead(): String {
     val head = File("${System.getProperty("user.dir")}/.kit/HEAD").readText()
     return if (head.contains("ref: refs/heads/")) {
@@ -419,6 +505,11 @@ fun getHead(): String {
     }
 }
 
+/**
+ * create a new branch
+ * @param branchName the name of the branch
+ * @param ref the commit hash to point to
+ */
 fun branch(branchName: String, ref: String = "HEAD") {
     val branch = File("${System.getProperty("user.dir")}/.kit/refs/heads/$branchName")
     if (branch.exists()) {
@@ -448,6 +539,12 @@ fun branch(branchName: String, ref: String = "HEAD") {
 
 }
 
+/**
+ * get the commit hash of a branch
+ * @param branch the name of the branch
+ * @return the commit hash of the branch
+ * @throws Exception if the branch does not exist
+ */
 private fun getBranchCommit(branch: String): String {
     if (!File("${System.getProperty("user.dir")}/.kit/refs/heads/$branch").exists()) {
         throw Exception("fatal: Not a valid object name: '$branch'.")
@@ -455,6 +552,10 @@ private fun getBranchCommit(branch: String): String {
     return File("${System.getProperty("user.dir")}/.kit/refs/heads/$branch").readText()
 }
 
+/**
+ * update the working directory to the state of a commit
+ * @param commitHash the hash of the commit
+ */
 fun updateWorkingDirectory(commitHash: String) {
     // get the tree hash from the commit
     val treeHash = getTreeHash(commitHash)
@@ -469,11 +570,21 @@ fun updateWorkingDirectory(commitHash: String) {
     }
 }
 
+/**
+ * get the tree hash from a commit
+ * @param commitHash the hash of the commit
+ * @return the hash of the tree
+ */
 fun getTreeHash(commitHash: String): String {
     val content = catFile(commitHash, "-p")
     return content.split("\n")[0].split(" ")[1]
 }
 
+/**
+ * get the tree entries of a tree
+ * @param treeHash the hash of the tree
+ * @return a list of tree entries
+ */
 fun getTreeEntries(treeHash: String): List<TreeEntry> {
     val content = catFile(treeHash, "-p")
     val treeEntries = mutableListOf<TreeEntry>()
@@ -495,6 +606,17 @@ fun getTreeEntries(treeHash: String): List<TreeEntry> {
 }
 
 
+/**
+ * colorize the output in blue
+ */
 fun String.red() = "\u001B[31m$this\u001B[0m"
+
+/**
+ * colorize the output in green
+ */
 fun String.green() = "\u001B[32m$this\u001B[0m"
+
+/**
+ * colorize the output in yellow
+ */
 fun String.yellow() = "\u001B[33m$this\u001B[0m"
