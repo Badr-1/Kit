@@ -58,6 +58,12 @@ fun commitTree(treeHash: String, commitMessage: String, parentCommit: String = "
     return hashObject(content, type = "commit", write = true)
 }
 
+/**
+ * display the content of an object
+ * @param hashObject the hash of the object
+ * @param option the option to use (either -t, -s or -p)
+ * @return the content of the object
+ */
 fun catFile(hashObject: String, option: String): String {
     val workingDirectory = System.getProperty("user.dir")
     val path = "${workingDirectory}/.kit/objects/${hashObject.substring(0, 2)}/${hashObject.substring(2)}"
@@ -91,6 +97,11 @@ fun catFile(hashObject: String, option: String): String {
     }
 }
 
+/**
+ * helper function for catFile to parse the content of a tree
+ * @param contentWithoutHeader the content of the tree without the header
+ * @return the parsed content of the tree
+ */
 fun parseTreeContent(contentWithoutHeader: MutableList<Byte>): String {
     /**
      * format of entries in the tree:
@@ -120,14 +131,30 @@ fun parseTreeContent(contentWithoutHeader: MutableList<Byte>): String {
     }
 }
 
+/**
+ * gets the path of the object in the object database
+ * @receiver the hash of the object
+ * @return the path of the object in the object database
+ */
 fun String.objectPath(): String {
     return "${System.getProperty("user.dir")}/.kit/objects/${this.substring(0, 2)}/${this.substring(2)}"
 }
 
+/**
+ * check if an object exists in the object database
+ * @receiver the hash of the object
+ * @return true if the object exists, false otherwise
+ */
 fun String.objectExists(): Boolean {
     return File(this.objectPath()).exists()
 }
 
+/**
+ * data class to represent a tree entry
+ * @param mode the mode of the entry
+ * @param path the path of the entry
+ * @param hash the hash of the entry
+ */
 data class TreeEntry(val mode: String, val path: String, val hash: String)
 
 /**
@@ -279,6 +306,11 @@ fun hashObject(path: String, type: String = "blob", write: Boolean = false): Str
     return sha1
 }
 
+/**
+ * Hashes the given bytes using sha1
+ * @param bytes the bytes to be hashed
+ * @return the sha1 hash of the bytes
+ */
 fun sha1(bytes: ByteArray): String {
     val digest = MessageDigest
         .getInstance("SHA-1")
