@@ -374,4 +374,22 @@ fun getType(hashObject: String): String {
     return contentStr.substringBefore(" ")
 }
 
+fun getContent(hashObject: String): String {
+    val workingDirectory = System.getProperty("user.dir")
+    val path = "${workingDirectory}/.kit/objects/${hashObject.substring(0, 2)}/${hashObject.substring(2)}"
+    val content = Zlib.inflate(File(path).readBytes())
+    val contentStr = content.toString(Charsets.UTF_8)
+    val type = contentStr.substringBefore(" ")
+    val contentWithoutHeader = contentStr.substringAfter("\u0000")
+
+
+    return  if (type == "tree") {
+        val list = content.toMutableList()
+        // remove till the first NUL
+        list.subList(0, list.indexOf(0.toByte()) + 1).clear()
+        parseTreeContent(list)
+    } else
+        contentWithoutHeader
+}
+
 /********** helper functions **********/

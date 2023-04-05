@@ -242,7 +242,7 @@ fun log() {
         }
     }
     for (commit in commits) {
-        val commitContent = catFile(commit, "-p")
+        val commitContent = getContent(commit)
         val hasParent = if (commitContent.contains("parent")) 0 else 1
         val authorLine = commitContent.split("\n")[2 - hasParent].split(" ").toMutableList()
         authorLine.removeFirst()
@@ -335,7 +335,7 @@ fun updateWorkingDirectory(commitHash: String) {
             file.setExecutable(true)
         }
         file.createNewFile()
-        file.writeText(catFile(it.hash, "-p"))
+        file.writeText(getContent(it.hash))
     }
 }
 
@@ -345,7 +345,7 @@ fun updateWorkingDirectory(commitHash: String) {
  * @return the hash of the tree
  */
 fun getTreeHash(commitHash: String): String {
-    val content = catFile(commitHash, "-p")
+    val content = getContent(commitHash)
     return content.split("\n")[0].split(" ")[1]
 }
 
@@ -355,7 +355,7 @@ fun getTreeHash(commitHash: String): String {
  * @return a list of tree entries
  */
 fun getTreeEntries(treeHash: String): List<TreeEntry> {
-    val content = catFile(treeHash, "-p")
+    val content = getContent(treeHash)
     val treeEntries = mutableListOf<TreeEntry>()
     content.split("\n").map {
         val mode = it.split(" ")[0]
@@ -497,7 +497,7 @@ fun calculateDateTimeDifference(startDate: LocalDateTime, endDate: LocalDateTime
  * @return the hash of the parent commit
  */
 fun getParent(commitHash: String): String {
-    val content = catFile(commitHash, "-p")
+    val content = getContent(commitHash)
     return if (content.contains("parent")) {
         content.split("\n")[1].split(" ")[1]
     } else {
