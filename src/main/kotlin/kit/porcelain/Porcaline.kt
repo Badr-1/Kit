@@ -219,17 +219,22 @@ fun checkout(ref: String) {
     val commitHash = when {
         // TODO think about supporting working with commit hashes less than 40 characters (short commit hashes)
         // TODO think about checking out files
-        ref.matches(Regex("[0-9a-f]{40}")) -> ref
+        ref.matches(Regex("[0-9a-f]{40}")) -> {
+            // change the HEAD
+            File("${System.getProperty("user.dir")}/.kit/HEAD").writeText(ref)
+            ref
+        }
         else -> {
             val branch = File("${System.getProperty("user.dir")}/.kit/refs/heads/$ref")
             if (!branch.exists()) {
                 throw Exception("error: pathspec '$ref' did not match any file(s) known to kit")
             }
+            // change the HEAD
+            File("${System.getProperty("user.dir")}/.kit/HEAD").writeText("ref: refs/heads/$ref")
             branch.readText()
         }
     }
-    // change the HEAD
-    File("${System.getProperty("user.dir")}/.kit/HEAD").writeText(commitHash)
+
     updateWorkingDirectory(commitHash)
 }
 
@@ -397,8 +402,14 @@ fun statusString(
     staged: List<String>,
     unStaged: List<String>,
 ): String {
+    val head = getHead()
+    val onWhat = if (head.matches(Regex("[0-9a-f]{40}"))) {
+        "Head detached at ${head.substring(0, 7).red()}"
+    } else {
+        "On branch ${head.green()}"
+    }
     return """
-        On branch master
+        $onWhat
         
         Untracked files:
         ${untrackedFiles.sorted().joinToString("\n\t\t") { "?? $it".red() }}
