@@ -11,20 +11,20 @@ import java.security.MessageDigest
  * @param option the option to use (either -a or -d)
  * @return success message
  */
-fun updateIndex(path: String, option: String, sha1: String = "", cacheInfo: String = ""): String {
-    return when {
+fun updateIndex(path: String, option: String, sha1: String = "", cacheInfo: String = "") {
+    when {
         option == "-d" -> {
             GitIndex.remove(File(path))
-            "Removed $path from index"
+            println("Removed $path from index")
         }
 
         option == "-a" && cacheInfo.isNotEmpty() -> {
             GitIndex.add(File(path), sha1, cacheInfo)
-            "Added $path to index"
+            println("Added $path to index")
         }
 
         else -> {
-            "usage: update-index <path> (-a|-d) <sha1> <cacheInfo>"
+            throw IllegalArgumentException("usage: update-index <path> (-a|-d) <sha1> <cacheInfo>")
         }
     }
 }
@@ -91,9 +91,8 @@ fun catFile(hashObject: String, option: String): String {
             } else
                 contentWithoutHeader
         }
-
-        else -> "usage: cat-file [-t | -s | -p] <object>"
-    }
+        else -> throw IllegalArgumentException("usage: cat-file [-t | -s | -p] <object>")
+    }.apply { println(this) }
 }
 
 
@@ -108,9 +107,8 @@ fun writeTree(directory: String, write: Boolean = false): String {
         throw FileNotFoundException("$directory (No such file or directory)")
     }
     if (chosenDirectory.listFiles()!!.toMutableList().none { it.name != ".kit" }) {
-        println("directory $directory is empty") // TODO: remove this after debugging
         // why not throw an exception?
-        // because we want to be to run this recursively
+        // because we want to run this recursively
         // and there's no problem if a directory is empty just avoid it
         return ""
     }
@@ -137,11 +135,22 @@ fun writeTree(directory: String, write: Boolean = false): String {
              * 3- the file is in the index with a different hash => add what's in the index to the tree
              * this means that the file is modified but not staged yet.
              */
+            /**
+             * there are three cases for files being added to the tree
+             *
+             * 1- the file is not in the index => ignore it, still untracked
+             *
+             * 2- the file is in the index with the same hash => add it to the tree, the file is either:
+             *      1- not modified
+             *      2- modified and staged
+             *
+             * 3- the file is in the index with a different hash => add what's in the index to the tree
+             * this means that the file is modified but not staged yet.
+             */
             val indexEntry = GitIndex.get(file.relativePath())
-            if (indexEntry == null) { // case 1
-                println("file ${file.path} is not in the index") // TODO: remove this after debugging
+                ?: // case 1
                 continue
-            }
+
             /**
              * mode per git documentation:
              * @see <a href="https://git-scm.com/book/en/v2/Git-Internals-Git-Objects">git Objects - Tree Objects</a>
@@ -151,14 +160,14 @@ fun writeTree(directory: String, write: Boolean = false): String {
             entries.add(TreeEntry(mode, file.name, indexEntry.sha1))
         }
     }
-    return mkTree(entries, write)
+    return mkTree(entries, write).apply { println(this) }
 }
 
 /**
  * List the files in the index
  */
 fun lsFiles(): String {
-    return GitIndex.list()
+    return GitIndex.list().apply { println(this) }
 }
 
 /**
@@ -208,7 +217,7 @@ fun hashObject(path: String, type: String = "blob", write: Boolean = false): Str
         File(objectPath).writeBytes(compressed)
     }
 
-    return sha1
+    return sha1.apply { println(this) }
 }
 
 
@@ -303,7 +312,7 @@ fun parseTreeContent(contentWithoutHeader: MutableList<Byte>): String {
     }
     return entries.joinToString("\n") {
         "${it.mode} ${catFile(it.hash, "-t")} ${it.hash}\t${it.path}"
-    }
+    }.apply { println(this) }
 }
 
 

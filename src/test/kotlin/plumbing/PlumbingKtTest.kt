@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.assertThrows
 import plumbing.GitIndex.clearIndex
 import plumbing.GitIndex.readIndex
 import utils.*
@@ -400,9 +401,10 @@ class PlumbingKtTest {
         file.createNewFile()
         file.writeText("Hello World")
         // update the index
-        val output = updateIndex(file.path, "-w", hashObject(file.path, write = true), "100644")
-
-        assertEquals("usage: update-index <path> (-a|-d) <sha1> <cacheInfo>", output)
+        val exception = assertThrows<IllegalArgumentException> {
+            updateIndex(file.path, "-w", hashObject(file.path, write = true), "100644")
+        }
+        assertEquals("usage: update-index <path> (-a|-d) <sha1> <cacheInfo>", exception.message)
     }
 
     /**
@@ -990,7 +992,9 @@ class PlumbingKtTest {
         // hash the file
         val sha1 = hashObject(file.path, write = true)
         // cat the file
-        val content = catFile(sha1, "-x")
-        assertEquals("usage: cat-file [-t | -s | -p] <object>", content)
+        val exception = assertThrows<IllegalArgumentException> {
+            catFile(sha1, "-x")
+        }
+        assertEquals("usage: cat-file [-t | -s | -p] <object>", exception.message)
     }
 }
