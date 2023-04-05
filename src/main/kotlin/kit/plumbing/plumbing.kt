@@ -46,6 +46,9 @@ fun commitTree(treeHash: String, commitMessage: String, parentCommit: String = "
             throw Exception("parent commit doesn't exist")
         }
     }
+    if (File("${System.getProperty("user.dir")}/.kit/config").exists()) {
+        Config.read()
+    }
     val tree = "tree $treeHash\n"
     val parent = if (parentCommit.isEmpty()) parentCommit else "parent $parentCommit\n"
     val author =

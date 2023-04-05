@@ -13,7 +13,7 @@ object Config {
      * - values, eg 0
      * */
     private fun getConfigFile() = File("${System.getProperty("user.dir")}/.kit/config")
-    private val sections = mutableListOf("core") // to be updated when more sections are added
+    private val sections = mutableSetOf("core") // to be updated when more sections are added
     private val values = mutableMapOf(
         "core" to mutableMapOf(
             "repositoryformatversion" to "0", "filemode" to "true", "bare" to "false", "logallrefupdates" to "true"
@@ -37,6 +37,24 @@ object Config {
             getConfigFile().appendText("[$section]\n")
             for ((key, value) in values[section]!!) {
                 getConfigFile().appendText("\t$key = $value\n")
+            }
+        }
+    }
+
+    /**
+     * read the config file attributes
+     */
+    fun read() {
+        val lines = getConfigFile().readLines()
+        for (line in lines) {
+            if (line.startsWith("[")) {
+                val section = line.substring(1, line.length - 1)
+                sections.add(section)
+                values[section] = mutableMapOf()
+            } else if (line.startsWith("\t")) {
+                val key = line.substring(line.indexOf("\t") + 1, line.indexOf(" = "))
+                val value = line.substring(line.indexOf(" = ") + 3)
+                values[sections.last()]!![key] = value
             }
         }
     }
