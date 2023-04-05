@@ -7,7 +7,6 @@ import java.time.*
 import java.util.*
 
 
-
 /**
  * Initialize a new repository or reinitialize an existing one
  * @param repositoryName the name of the repository, if empty the current directory will be used
@@ -24,7 +23,7 @@ fun init(repositoryName: String = ""): String {
     }
     path += '/'
     if (File("$path.kit").exists()) {
-        return "Reinitialized existing Kit repository in ${File("${path}.kit").absolutePath}"
+        return "Reinitialized existing Kit repository in ${File("${path}.kit").absolutePath}".apply { println(this) }
     }
     // repository
     File("${path}.kit").mkdir()
@@ -39,7 +38,7 @@ fun init(repositoryName: String = ""): String {
     // default config
     Config.unset()
     Config.write()
-    return "Initialized empty Kit repository in ${File("${path}.kit").absolutePath}"
+    return "Initialized empty Kit repository in ${File("${path}.kit").absolutePath}".apply { println(this) }
 }
 
 /**
@@ -170,7 +169,7 @@ fun status(): String {
     }
 
 
-    return statusString(untrackedFiles, stagedChanges, unStagedChanges)
+    return statusString(untrackedFiles, stagedChanges, unStagedChanges).apply { println(this) }
 }
 
 // TODO think about adding amend option
@@ -254,8 +253,8 @@ fun log() {
         val timeDifference = calculateDateTimeDifference(
             date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
             today.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
-        )
-        val author = authorLine.joinToString(" ").green()
+        ).green()
+        val author = "<${authorLine.joinToString(" ")}>".blue()
         val message = commitContent.split("\n")[4 - hasParent]
         val refs = branches.filter { it.value == commit }.map { it.key }.toMutableList()
         if (commit == head) {
@@ -264,12 +263,10 @@ fun log() {
             refs.remove(head)
             refs.add("HEAD -> $head")
         }
+        val commitHash = commit.substring(0, 7).red()
+        val commitRefs = if (refs.isNotEmpty()) " (${refs.joinToString()})".yellow() else ""
         println(
-            "* ${
-                commit.substring(
-                    0, 7
-                ).red()
-            }${if (refs.isNotEmpty()) " (${refs.joinToString()})".yellow() else ""} $message <$author> (${timeDifference.green()})"
+            "* $commitHash$commitRefs $message $timeDifference $author"
         )
     }
 }
@@ -307,8 +304,6 @@ fun branch(branchName: String, ref: String = "HEAD") {
     }
 
 }
-
-
 
 
 /********** helper functions **********/
@@ -483,15 +478,17 @@ fun calculateDateTimeDifference(startDate: LocalDateTime, endDate: LocalDateTime
     val seconds = duration.seconds % 60
 
     // return the most significant time unit
-    return when {
-        years > 0 -> "$years year${if (years > 1) "s" else ""} ago"
-        months > 0 -> "$months month${if (months > 1) "s" else ""} ago"
-        days > 0 -> "$days day${if (days > 1) "s" else ""} ago"
-        hours > 0 -> "$hours hour${if (hours > 1) "s" else ""} ago"
-        minutes > 0 -> "$minutes minute${if (minutes > 1) "s" else ""} ago"
-        seconds > 0 -> "$seconds second${if (seconds > 1) "s" else ""} ago"
-        else -> "just now"
-    }
+    return "(${
+        when {
+            years > 0 -> "$years year${if (years > 1) "s" else ""} ago"
+            months > 0 -> "$months month${if (months > 1) "s" else ""} ago"
+            days > 0 -> "$days day${if (days > 1) "s" else ""} ago"
+            hours > 0 -> "$hours hour${if (hours > 1) "s" else ""} ago"
+            minutes > 0 -> "$minutes minute${if (minutes > 1) "s" else ""} ago"
+            seconds > 0 -> "$seconds second${if (seconds > 1) "s" else ""} ago"
+            else -> "just now"
+        }
+    })"
 }
 
 /**

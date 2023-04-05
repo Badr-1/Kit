@@ -65,6 +65,11 @@ fun getMode(file: File): String {
 /**
  * colorize the output in blue
  */
+fun String.blue() = "\u001B[34m$this\u001B[0m"
+
+/**
+ * colorize the output in red
+ */
 fun String.red() = "\u001B[31m$this\u001B[0m"
 
 /**
