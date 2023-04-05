@@ -187,6 +187,16 @@ fun commit(message: String): String {
             else ""
         }
     }
+    if(parent.isNotEmpty())
+    {
+        val parentTree = getTreeHash(parent)
+        val indexTree = writeTree(System.getProperty("user.dir"), write = false)
+        if(parentTree == indexTree)
+        {
+            throw Exception("nothing to commit, working tree clean")
+        }
+    }
+
     val treeHash = writeTree(System.getProperty("user.dir"), write = true)
     val commitHash = commitTree(treeHash, message, parent)
     if (head.matches(Regex("[0-9a-f]{40}"))) {
