@@ -65,16 +65,17 @@ object Config {
 
 
 fun init(repositoryName: String = ""): String {
-    var path = "${System.getProperty("user.dir")}/"
+    var path = System.getProperty("user.dir")
     if (repositoryName.isNotEmpty()) {
         File("$path/$repositoryName").mkdir()
-        if (!path.contains(repositoryName)) {
-            path += "$repositoryName/"
+        if (!path.endsWith("/$repositoryName")) {
+            path += "/$repositoryName"
         }
         System.setProperty("user.dir", path)
-        if (File("$path.kit").exists()) {
-            return "Reinitialized existing Kit repository in ${File("${path}.kit").absolutePath}"
-        }
+    }
+    path += '/'
+    if (File("$path.kit").exists()) {
+        return "Reinitialized existing Kit repository in ${File("${path}.kit").absolutePath}"
     }
     // repository
     File("${path}.kit").mkdir()
@@ -199,13 +200,17 @@ fun status(): String {
         // add modified files (content)
         stagedChanges.addAll(
             indexFiles.filter { headCommitTreeFiles.map { headEntry -> headEntry.path }.contains(it) }
-                .filter {common -> GitIndex.get(common)!!.sha1 != headCommitTreeFiles.find { it.path == common }!!.hash }
+                .filter { common -> GitIndex.get(common)!!.sha1 != headCommitTreeFiles.find { it.path == common }!!.hash }
                 .map { "M $it" }
         )
         // add modified files (mode)
         stagedChanges.addAll(
             indexFiles.filter { headCommitTreeFiles.map { headEntry -> headEntry.path }.contains(it) }
-                .filter {common -> GitIndex.get(common)!!.mode != headCommitTreeFiles.find { it.path == common }!!.mode.toInt(8) }
+                .filter { common ->
+                    GitIndex.get(common)!!.mode != headCommitTreeFiles.find { it.path == common }!!.mode.toInt(
+                        8
+                    )
+                }
                 .map { "M $it" }
         )
         // add deleted files
