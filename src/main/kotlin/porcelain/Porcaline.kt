@@ -391,13 +391,13 @@ fun statusString(
         On branch master
         
         Untracked files:
-        ${untrackedFiles.sorted().joinToString("\n\t\t") { "?? $it" }}
+        ${untrackedFiles.sorted().joinToString("\n\t\t") { "?? $it".red() }}
         
         Changes to be committed :
-        ${staged.sorted().joinToString("\n\t\t") { it }}
+        ${staged.sorted().joinToString("\n\t\t") { it.green() }}
         
         Changes not staged for commit:
-        ${unStaged.sorted().joinToString("\n\t\t") { it }}
+        ${unStaged.sorted().joinToString("\n\t\t") { it.yellow() }}
 
         """
 }
