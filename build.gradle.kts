@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.example"
-version = "1.0-SNAPSHOT"
+version = "v1.0"
 
 repositories {
     mavenCentral()
@@ -21,7 +21,17 @@ tasks.test {
 kotlin {
     jvmToolchain(11)
 }
-
 application {
-    mainClass.set("MainKt")
+    mainClass.set("Main")
+}
+
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = "kit.Main"
+        archiveBaseName.set("kit")
+    }
+    configurations["compileClasspath"].forEach { file: File ->
+        from(zipTree(file.absoluteFile))
+    }
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
