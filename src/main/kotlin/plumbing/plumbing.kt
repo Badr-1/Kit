@@ -15,12 +15,12 @@ fun updateIndex(path: String, option: String, sha1: String = "", cacheInfo: Stri
     when {
         option == "-d" -> {
             GitIndex.remove(File(path))
-            println("Removed $path from index")
+            println("Removed ${File(path).relativePath().red()} from index")
         }
 
         option == "-a" && cacheInfo.isNotEmpty() -> {
             GitIndex.add(File(path), sha1, cacheInfo)
-            println("Added $path to index")
+            println("Added ${File(path).relativePath().green()} to index")
         }
 
         else -> {
@@ -80,8 +80,8 @@ fun catFile(hashObject: String, option: String): String {
      * */
 
     return when (option) {
-        "-t" -> type
-        "-s" -> size.toString()
+        "-t" -> type.apply { println(this) }
+        "-s" -> size.toString().apply { println(this) }
         "-p" -> {
             if (type == "tree") {
                 val list = content.toMutableList()
@@ -89,10 +89,10 @@ fun catFile(hashObject: String, option: String): String {
                 list.subList(0, list.indexOf(0.toByte()) + 1).clear()
                 parseTreeContent(list)
             } else
-                contentWithoutHeader
+                contentWithoutHeader.apply { println(this) }
         }
         else -> throw IllegalArgumentException("usage: cat-file [-t | -s | -p] <object>")
-    }.apply { println(this) }
+    }
 }
 
 
@@ -160,7 +160,19 @@ fun writeTree(directory: String, write: Boolean = false): String {
             entries.add(TreeEntry(mode, file.name, indexEntry.sha1))
         }
     }
-    return mkTree(entries, write).apply { println(this) }
+    return mkTree(
+        entries,
+        write
+    ).apply {
+        if (write) println(
+            "writing object of type ${"tree".blue()} into the object database ${
+                this.substring(
+                    0,
+                    7
+                ).red()
+            }"
+        )
+    }
 }
 
 /**
@@ -217,9 +229,23 @@ fun hashObject(path: String, type: String = "blob", write: Boolean = false): Str
         File(objectPath).writeBytes(compressed)
     }
 
-    return sha1.apply { println(this) }
-}
+    return sha1.apply {
+        when {
+            write && type == "blob" -> println(
+                "writing " + File(path).relativePath()
+                    .yellow() + " object of type " + "blob".blue() + " into the object database " + this.substring(0, 7)
+                    .red()
+            )
 
+            write && type == "commit" -> println(
+                "writing object of type " + "commit".blue() + " into the object database " + this.substring(
+                    0,
+                    7
+                ).red()
+            )
+        }
+    }
+}
 
 
 /********** helper functions **********/
@@ -311,8 +337,14 @@ fun parseTreeContent(contentWithoutHeader: MutableList<Byte>): String {
         entries.add(TreeEntry(mode, path, sha1))
     }
     return entries.joinToString("\n") {
-        "${it.mode} ${catFile(it.hash, "-t")} ${it.hash}\t${it.path}"
-    }.apply { println(this) }
+        "${it.mode} ${getType(it.hash)} ${it.hash}\t${it.path}"
+    }.apply {
+        entries.joinToString("\n") {
+            "${it.mode.green()} ${getType(it.hash).blue()} ${it.hash.red()}\t${it.path.yellow()}"
+        }.apply {
+            println(this)
+        }
+    }
 }
 
 
@@ -332,6 +364,14 @@ fun String.objectPath(): String {
  */
 fun String.objectExists(): Boolean {
     return File(this.objectPath()).exists()
+}
+
+fun getType(hashObject: String): String {
+    val workingDirectory = System.getProperty("user.dir")
+    val path = "${workingDirectory}/.kit/objects/${hashObject.substring(0, 2)}/${hashObject.substring(2)}"
+    val content = Zlib.inflate(File(path).readBytes())
+    val contentStr = content.toString(Charsets.UTF_8)
+    return contentStr.substringBefore(" ")
 }
 
 /********** helper functions **********/
