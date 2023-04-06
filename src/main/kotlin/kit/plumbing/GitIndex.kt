@@ -243,7 +243,7 @@ object GitIndex {
      * @return list of index entries
      */
     fun entries(): List<GitIndexEntry> {
-        return entries.subList(0, entries.size)
+        return mutableListOf(*entries.toTypedArray())
     }
 
     /**

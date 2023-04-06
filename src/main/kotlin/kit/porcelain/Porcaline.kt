@@ -187,12 +187,10 @@ fun commit(message: String): String {
             else ""
         }
     }
-    if(parent.isNotEmpty())
-    {
+    if (parent.isNotEmpty()) {
         val parentTree = getTreeHash(parent)
         val indexTree = writeTree(System.getProperty("user.dir"), write = false)
-        if(parentTree == indexTree)
-        {
+        if (parentTree == indexTree) {
             throw Exception("nothing to commit, working tree clean")
         }
     }
@@ -224,6 +222,7 @@ fun checkout(ref: String) {
             File("${System.getProperty("user.dir")}/.kit/HEAD").writeText(ref)
             ref
         }
+
         else -> {
             val branch = File("${System.getProperty("user.dir")}/.kit/refs/heads/$ref")
             if (!branch.exists()) {
@@ -341,16 +340,28 @@ private fun getBranchCommit(branch: String): String {
  * @param commitHash the hash of the commit
  */
 fun updateWorkingDirectory(commitHash: String) {
+    // delete all files that are in the index
+    val index = GitIndex.entries()
+    index.forEach {
+        val file = File("${System.getProperty("user.dir")}/${it.path}")
+        updateIndex(file.path, "-d")
+        if (file.exists()) {
+            file.delete()
+        }
+    }
+
+
     // get the tree hash from the commit
     val treeHash = getTreeHash(commitHash)
     val treeEntries = getTreeEntries(treeHash)
     treeEntries.forEach {
         val file = File("${System.getProperty("user.dir")}/${it.path}")
+        file.createNewFile()
+        file.writeText(getContent(it.hash))
         if (it.mode == "100755") {
             file.setExecutable(true)
         }
-        file.createNewFile()
-        file.writeText(getContent(it.hash))
+        updateIndex(file.path, "-a", hashObject(file.path), it.mode)
     }
 }
 
