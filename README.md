@@ -34,7 +34,7 @@ I'll be implementing plumbing commands at first, then I'll implement porcelain c
 - Add more prints to display what's going on in these commands:
   - [x] init
   - [x] checkout
-  - [ ] branch
+  - [x] branch
 
 ## Plumbing Commands
 - [x] hash-object

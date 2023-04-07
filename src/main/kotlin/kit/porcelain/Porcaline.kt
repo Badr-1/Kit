@@ -205,7 +205,7 @@ fun commit(message: String): String {
             throw Exception("nothing to commit, working tree clean")
         }
     }
-    if(writeTree(System.getProperty("user.dir"), write = false).isEmpty()){
+    if (writeTree(System.getProperty("user.dir"), write = false).isEmpty()) {
         throw Exception("nothing to commit, working tree clean")
     }
 
@@ -326,10 +326,14 @@ fun branch(branchName: String, ref: String = "HEAD") {
                     getBranchCommit(head)
                 }
             }
+            println("Created branch " + branchName.green() + " at " + dest.substring(0, 7).red())
+            println("file: " + branch.relativePath().green())
             branch.writeText(dest)
         }
 
         else -> {
+            println("Created branch " + branchName.green() + " at " + ref.substring(0, 7).red())
+            println("file: " + branch.relativePath().green())
             branch.writeText(ref)
         }
     }
