@@ -290,6 +290,41 @@ class PorcelainKtTest {
         unstage(files[1].path)
         status()
     }
+    @Test
+    fun `first commit on a clean tree`(){
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        val exception = assertThrows<Exception> {
+            commit("test commit")
+        }
+        assertEquals("nothing to commit, working tree clean", exception.message)
+    }
+
+    @Test
+    fun `second commit on a clean tree`(){
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // create a file
+        val filePath = "${workingDirectory.path}/test.txt"
+        File(filePath).writeText("test text")
+        add(filePath)
+        commit("test commit")
+        val exception = assertThrows<Exception> {
+            commit("test commit")
+        }
+        assertEquals("nothing to commit, working tree clean", exception.message)
+    }
+
 
     @Test
     fun `commit on master`() {

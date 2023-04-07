@@ -205,6 +205,9 @@ fun commit(message: String): String {
             throw Exception("nothing to commit, working tree clean")
         }
     }
+    if(writeTree(System.getProperty("user.dir"), write = false).isEmpty()){
+        throw Exception("nothing to commit, working tree clean")
+    }
 
     val treeHash = writeTree(System.getProperty("user.dir"), write = true)
     val commitHash = commitTree(treeHash, message, parent)
