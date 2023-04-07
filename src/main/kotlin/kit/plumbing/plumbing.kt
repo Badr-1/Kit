@@ -168,14 +168,11 @@ fun writeTree(directory: String, write: Boolean = false): String {
         entries,
         write
     ).apply {
-        if (write) println(
-            "writing object of type ${"tree".blue()} into the object database ${
-                this.substring(
-                    0,
-                    7
-                ).red()
-            }"
-        )
+        if (write) {
+            println("writing object of type ${"tree".blue()} into the object database ${this.substring(0, 7).red()}")
+            catFile(this, "-p")
+        }
+
     }
 }
 
