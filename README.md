@@ -33,7 +33,7 @@ I'll be implementing plumbing commands at first, then I'll implement porcelain c
 ### Next
 - Add more prints to display what's going on in these commands:
   - [x] init
-  - [ ] checkout
+  - [x] checkout
   - [ ] branch
 
 ## Plumbing Commands

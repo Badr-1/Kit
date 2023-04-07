@@ -227,6 +227,7 @@ fun commit(message: String): String {
  * @throws Exception if the ref is not a commit hash or a branch name
  */
 fun checkout(ref: String) {
+    println("Checking out ${ref.red()}".blue())
     // ref could be a commit hash or a branch name
     val commitHash = when {
         // TODO think about supporting working with commit hashes less than 40 characters (short commit hashes)
@@ -234,6 +235,7 @@ fun checkout(ref: String) {
         ref.matches(Regex("[0-9a-f]{40}")) -> {
             // change the HEAD
             File("${System.getProperty("user.dir")}/.kit/HEAD").writeText(ref)
+            println("Writing ${ref.red()} to ${".kit/HEAD".blue()}")
             ref
         }
 
@@ -244,6 +246,7 @@ fun checkout(ref: String) {
             }
             // change the HEAD
             File("${System.getProperty("user.dir")}/.kit/HEAD").writeText("ref: refs/heads/$ref")
+            println("Writing ${"ref: refs/heads/$ref".red()} to ${".kit/HEAD".blue()}")
             branch.readText()
         }
     }
@@ -354,6 +357,8 @@ private fun getBranchCommit(branch: String): String {
  * @param commitHash the hash of the commit
  */
 fun updateWorkingDirectory(commitHash: String) {
+
+    println("Removing Files From Working Directory and Index".red())
     // delete all files that are in the index
     val index = GitIndex.entries()
     index.forEach {
@@ -369,8 +374,7 @@ fun updateWorkingDirectory(commitHash: String) {
             }
         }
     }
-
-
+    println("Updating Files in Working Directory and Index".blue())
     // get the tree hash from the commit
     val treeHash = getTreeHash(commitHash)
     val treeEntries = getTreeEntries(treeHash)
