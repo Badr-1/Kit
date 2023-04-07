@@ -227,7 +227,7 @@ class PorcelainKtTest {
         File("$workingDirectory/test").mkdir()
         files[0].renameTo(File("$workingDirectory/test/${files[0].name}"))
         add(files[1].path)
-        println(status())
+        status()
     }
 
     @Test
@@ -257,7 +257,7 @@ class PorcelainKtTest {
         add(files[3].path)
         add(files[0].path)
         unstage(files[1].path)
-        println(status())
+        status()
     }
 
     @Test
@@ -288,7 +288,7 @@ class PorcelainKtTest {
         add(files[3].path)
         add(files[0].path)
         unstage(files[1].path)
-        println(status())
+        status()
     }
 
     @Test

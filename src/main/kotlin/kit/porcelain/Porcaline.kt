@@ -1,6 +1,7 @@
 package kit.porcelain
 
 import kit.plumbing.*
+import kit.porcelain.ChangeType.*
 import kit.utils.*
 import java.io.File
 import java.time.*
@@ -104,12 +105,14 @@ fun status(): String {
     // get all files in the HEAD commit tree
     val headCommitTreeFiles = getHeadCommitTreeFiles()
 
-    val untrackedFiles = mutableListOf<String>()
-    val unStagedChanges = mutableListOf<String>()
-    val stagedChanges = mutableListOf<String>()
+    val untrackedFiles = mutableListOf<Change>()
+    val unStagedChanges = mutableListOf<Change>()
+    val stagedChanges = mutableListOf<Change>()
 
     // untracked files are files that are in the working directory but not in the index
-    untrackedFiles.addAll(workingDirectoryFiles.filter { !indexFiles.contains(it) })
+
+    untrackedFiles.addAll(workingDirectoryFiles.filter { !indexFiles.contains(it) }
+        .map { Change(UNTRACKED, it) })
 
     /**
      * unStaged changes are the following (index vs working directory):
@@ -121,18 +124,18 @@ fun status(): String {
     unStagedChanges.addAll(
         workingDirectoryFiles.filter { indexFiles.contains(it) }
             .filter { GitIndex.get(it)!!.sha1 != hashObject("${System.getProperty("user.dir")}/$it") }
-            .map { "M $it" }
+            .map { Change(MODIFIED, it) }
     )
     // add modified files (mode)
     unStagedChanges.addAll(
         workingDirectoryFiles.filter { indexFiles.contains(it) }
             .filter { GitIndex.get(it)!!.mode != getMode(File("${System.getProperty("user.dir")}/$it")).toInt(8) }
-            .map { "M $it" }
+            .map { Change(MODIFIED, it) }
     )
     // add deleted files
     unStagedChanges.addAll(
         indexFiles.filter { !workingDirectoryFiles.contains(it) }
-            .map { "D $it" }
+            .map { Change(DELETED, it) }
     )
     /**
      * staged changes are the following (index vs HEAD commit tree):
@@ -145,19 +148,19 @@ fun status(): String {
         // add added files
         stagedChanges.addAll(
             workingDirectoryFiles.filter { indexFiles.contains(it) }
-                .map { "A $it" }
+                .map { Change(ADDED, it) }
         )
     } else {
         // add added files
         stagedChanges.addAll(
             indexFiles.filter { !headCommitTreeFiles.map { headEntry -> headEntry.path }.contains(it) }
-                .map { "A $it" }
+                .map { Change(ADDED, it) }
         )
         // add modified files (content)
         stagedChanges.addAll(
             indexFiles.filter { headCommitTreeFiles.map { headEntry -> headEntry.path }.contains(it) }
                 .filter { common -> GitIndex.get(common)!!.sha1 != headCommitTreeFiles.find { it.path == common }!!.hash }
-                .map { "M $it" }
+                .map { Change(MODIFIED, it) }
         )
         // add modified files (mode)
         stagedChanges.addAll(
@@ -167,12 +170,12 @@ fun status(): String {
                         8
                     )
                 }
-                .map { "M $it" }
+                .map { Change(MODIFIED, it) }
         )
         // add deleted files
         stagedChanges.addAll(
             headCommitTreeFiles.map { it.path }.filter { !indexFiles.contains(it) }
-                .map { "D $it" }
+                .map { Change(DELETED, it) }
         )
     }
 
@@ -419,6 +422,19 @@ fun getTreeEntries(treeHash: String): List<TreeEntry> {
 }
 
 
+enum class ChangeType {
+    ADDED, MODIFIED, DELETED, UNTRACKED;
+
+    override fun toString() = when (this) {
+        ADDED -> "A"
+        MODIFIED -> "M"
+        DELETED -> "D"
+        UNTRACKED -> "??"
+    }
+}
+
+data class Change(val type: ChangeType, val path: String)
+
 /**
  * helper function that returns the status of the repository as a string
  * @param untrackedFiles the list of untracked files
@@ -427,9 +443,9 @@ fun getTreeEntries(treeHash: String): List<TreeEntry> {
  * @return the status of the repository as a string
  */
 fun statusString(
-    untrackedFiles: List<String>,
-    staged: List<String>,
-    unStaged: List<String>,
+    untrackedFiles: List<Change>,
+    staged: List<Change>,
+    unStaged: List<Change>,
 ): String {
     val head = getHead()
     val onWhat = if (head.matches(Regex("[0-9a-f]{40}"))) {
@@ -437,15 +453,16 @@ fun statusString(
     } else {
         "On branch ${head.green()}"
     }
-    return """
-        $onWhat
-        Untracked files:
-        ${untrackedFiles.sorted().joinToString("\n\t\t") { "?? $it".red() }}
-        Changes to be committed :
-        ${staged.sorted().joinToString("\n\t\t") { it.green() }}
-        Changes not staged for commit:
-        ${unStaged.sorted().joinToString("\n\t\t") { it.yellow() }}
-        """
+    val status = mutableListOf<String>()
+    status += onWhat
+    status += untrackedFiles.sortedBy { it.path }.joinToString("\n\t") { "${it.type} ${it.path}".red() }
+        .ifEmpty { "" }
+    status += staged.sortedBy { it.path }.joinToString("\n\t") { "${it.type} ${it.path}".green() }
+        .ifEmpty { "" }
+    status += unStaged.sortedBy { it.path }.joinToString("\n\t") { "${it.type} ${it.path}".yellow() }
+        .ifEmpty { "" }
+    status.removeIf { it.isEmpty() }
+    return status.joinToString("\n\t")
 }
 
 /**
