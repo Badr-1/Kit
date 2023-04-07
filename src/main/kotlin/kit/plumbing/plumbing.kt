@@ -391,9 +391,38 @@ fun getContent(hashObject: String): String {
         val list = content.toMutableList()
         // remove till the first NUL
         list.subList(0, list.indexOf(0.toByte()) + 1).clear()
-        parseTreeContent(list)
+        getTreeContent(list)
     } else
         contentWithoutHeader
+}
+
+fun getTreeContent(contentWithoutHeader: MutableList<Byte>): String {
+    /**
+     * format of entries in the tree:
+     * mode SP path NUL sha1
+     * mode: 6 bytes
+     * SP: 1 byte
+     * path: variable length
+     * NUL: 1 byte
+     * sha1: 20 bytes
+     * parse till the end of the content
+     * */
+    val entries = mutableListOf<TreeEntry>()
+    while (contentWithoutHeader.isNotEmpty()) {
+        val mode = contentWithoutHeader.subList(0, contentWithoutHeader.indexOf(32.toByte())).toByteArray()
+            .toString(Charsets.UTF_8)
+        contentWithoutHeader.subList(0, contentWithoutHeader.indexOf(32.toByte())).clear()
+        contentWithoutHeader.removeAt(0) // remove the space
+        val path = contentWithoutHeader.subList(0, contentWithoutHeader.indexOf(0.toByte())).toByteArray()
+            .toString(Charsets.UTF_8)
+        contentWithoutHeader.subList(0, contentWithoutHeader.indexOf(0.toByte()) + 1).clear()
+        val sha1 = contentWithoutHeader.subList(0, 20).joinToString("") { "%02x".format(it) }
+        contentWithoutHeader.subList(0, 20).clear()
+        entries.add(TreeEntry(mode, path, sha1))
+    }
+    return entries.joinToString("\n") {
+        "${it.mode} ${getType(it.hash)} ${it.hash}\t${it.path}"
+    }
 }
 
 /********** helper functions **********/
