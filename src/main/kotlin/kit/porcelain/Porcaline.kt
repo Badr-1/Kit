@@ -26,18 +26,26 @@ fun init(repositoryName: String = ""): String {
         return "Reinitialized existing Kit repository in ${File("${path}.kit").absolutePath}".apply { println(this) }
     }
     // repository
+    println("Creating ${File("${path}.kit").relativePath()} directory".green())
     File("${path}.kit").mkdir()
     // objects database
+    println("Creating ${File("${path}.kit/objects").relativePath()} object database directory".green())
     File("${path}.kit/objects").mkdir()
     // refs
+    println("Creating ${File("${path}.kit/refs").relativePath()} directory".green())
     File("${path}.kit/refs").mkdir()
+    // heads
+    println("Creating ${File("${path}.kit/refs/heads").relativePath()} for branches directory".green())
     File("${path}.kit/refs/heads").mkdir()
     // HEAD
+    println("Creating ${File("${path}.kit/HEAD").relativePath()} file".green())
     File("${path}.kit/HEAD").writeText("ref: refs/heads/master")
+    println("Writing default branch name to HEAD".green())
     // config
     // default config
     Config.unset()
     Config.write()
+    println("Writing default config to ${File("${path}.kit/config").relativePath()}".green())
     return "Initialized empty Kit repository in ${File("${path}.kit").absolutePath}".apply { println(this) }
 }
 
@@ -347,6 +355,12 @@ fun updateWorkingDirectory(commitHash: String) {
         updateIndex(file.path, "-d")
         if (file.exists()) {
             file.delete()
+            // delete empty directories
+            var parent = file.parentFile
+            while (parent.listFiles()!!.isEmpty()) {
+                parent.delete()
+                parent = parent.parentFile
+            }
         }
     }
 
@@ -356,6 +370,10 @@ fun updateWorkingDirectory(commitHash: String) {
     val treeEntries = getTreeEntries(treeHash)
     treeEntries.forEach {
         val file = File("${System.getProperty("user.dir")}/${it.path}")
+        // create directories if necessary
+        if (!file.parentFile.exists()) {
+            file.parentFile.mkdirs()
+        }
         file.createNewFile()
         file.writeText(getContent(it.hash))
         if (it.mode == "100755") {
