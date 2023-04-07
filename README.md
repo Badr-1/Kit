@@ -30,11 +30,6 @@ git model is based on four objects:
 
 I'll be implementing plumbing commands at first, then I'll implement porcelain commands.
 
-### Next
-- Add more prints to display what's going on in these commands:
-  - [x] init
-  - [x] checkout
-  - [x] branch
 
 ## Plumbing Commands
 - [x] hash-object
@@ -59,13 +54,17 @@ I'll be implementing plumbing commands at first, then I'll implement porcelain c
 ### Init a repo creating a file and checking status
 
 <div align="center">
-    <img src="images/kit-init-status.png">
+    <img src="images/kit-init.png">
 </div>
 
 ### Adding file to index and configuring user then commiting and log to see the commit
 
 <div align="center">
-    <img src="images/kit-add-commit.png">
+    <img src="images/kit-add-status.png">
+</div>
+
+<div align="center">
+    <img src="images/kit-config-commit.png">
 </div>
 
 ### Create a branch and checkout to it
