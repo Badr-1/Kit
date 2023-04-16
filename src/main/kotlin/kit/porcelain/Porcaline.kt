@@ -341,6 +341,63 @@ fun branch(branchName: String, ref: String = "HEAD") {
 }
 
 
+/**
+ * creates an annotated tag
+ * @param tagName the name of the tag
+ * @param tagMessage the message of the tag
+ * @param objectHash the hash of the object to tag
+ * @param tagType the type of the object to tag
+ * @throws Exception if the tag already exists
+ * @return the hash of the tag
+ */
+fun tag(tagName: String, tagMessage: String, objectHash: String = getHEADHash(), tagType: String = "commit"): String {
+    val tagFile = File("${System.getProperty("user.dir")}/.kit/refs/tags/$tagName")
+    // if tag has already been created throw an exception
+    if (tagFile.exists()) {
+        throw Exception("fatal: tag '$tagName' already exists")
+    }
+    val content =
+        "object $objectHash\ntype $tagType\ntag $tagName\ntagger ${Config.get("user.name")} <${Config.get("user.email")}> ${System.currentTimeMillis() / 1000} +0200\n\n$tagMessage\n"
+    val hash = hashObject(content, "tag", true)
+
+    // if refs/tags doesn't exist create it
+    val tagsDirectory = File("${System.getProperty("user.dir")}/.kit/refs/tags")
+    if (!tagsDirectory.exists()) {
+        tagsDirectory.mkdirs()
+    }
+
+    // if tag has / create parent directories
+    if (tagName.contains("/")) {
+        if (!tagFile.parentFile.exists()) {
+            tagFile.parentFile.mkdirs()
+        }
+    }
+    println("Created tag " + tagName.green() + " for " + objectHash.substring(0, 7).red())
+    println("file: " + tagFile.relativePath().green())
+    tagFile.writeText(hash)
+    return hash
+}
+
+/**
+ * get the commit hash of the HEAD
+ * @return the commit hash of the HEAD
+ */
+fun getHEADHash(): String {
+    val workingDirectory = System.getProperty("user.dir")
+    val headFile = File("${workingDirectory}/.kit/HEAD")
+    val head = headFile.readText()
+    return if (head.startsWith("ref:")) {
+        val ref = head.substringAfter("ref:").trim()
+        val refFile = File("${workingDirectory}/.kit/$ref")
+        if (!refFile.exists()) {
+            throw Exception("fatal: Failed to resolve 'HEAD' as a valid ref.")
+        }
+        refFile.readText()
+    } else {
+        head
+    }
+}
+
 /********** helper functions **********/
 
 /**

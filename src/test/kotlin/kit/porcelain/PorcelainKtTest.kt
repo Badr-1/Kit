@@ -722,5 +722,117 @@ class PorcelainKtTest {
         assertEquals(0, history.size)
     }
 
+    @Test
+    fun `create a tag`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // create a file
+        val filePath = "${workingDirectory.path}/test.txt"
+        File(filePath).writeText("test text")
+        add(filePath)
+        commit("test commit")
+        val hash = tag("test", "test tag")
+        assertEquals(hash, File("$workingDirectory/.kit/refs/tags/test").readText())
+    }
+
+    @Test
+    fun `create an existing tag`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // create a file
+        val filePath = "${workingDirectory.path}/test.txt"
+        File(filePath).writeText("test text")
+        add(filePath)
+        commit("test commit")
+        tag("test", "test tag")
+        val exception = assertThrows<Exception> {
+            tag("test", "test tag")
+        }
+        assertEquals("fatal: tag 'test' already exists", exception.message)
+    }
+
+    @Test
+    fun `create a tag with directories`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // create a file
+        val filePath = "${workingDirectory.path}/test.txt"
+        File(filePath).writeText("test text")
+        add(filePath)
+        commit("test commit")
+        val hash = tag("test/test", "test tag")
+        assertEquals(hash, File("$workingDirectory/.kit/refs/tags/test/test").readText())
+    }
+
+    @Test
+    fun `create tag with HEAD pointing to a commit`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // create a file
+        val filePath = "${workingDirectory.path}/test.txt"
+        File(filePath).writeText("test text")
+        add(filePath)
+        checkout(commit("test commit"))
+        val hash = tag("test", "test tag")
+        assertEquals(hash, File("$workingDirectory/.kit/refs/tags/test").readText())
+    }
+
+    @Test
+    fun `create a tag on a commit other than HEAD`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        val commits = mutableListOf<String>()
+        for (i in 1..5) {
+            // create a file
+            val filePath = "${workingDirectory.path}/test.txt"
+            File(filePath).writeText("test text $i")
+            add(filePath)
+            val hash = commit("test commit")
+            commits.add(hash)
+        }
+        val hash = tag("test", "test tag", commits[2])
+        assertEquals(hash, File("$workingDirectory/.kit/refs/tags/test").readText())
+    }
+
+    @Test
+    fun `create a tag without any commit`()
+    {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        val exception = assertThrows<Exception> {
+            tag("test", "test tag")
+        }
+        assertEquals("fatal: Failed to resolve 'HEAD' as a valid ref.", exception.message)
+    }
 
 }

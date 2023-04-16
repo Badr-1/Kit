@@ -244,6 +244,13 @@ fun hashObject(path: String, type: String = "blob", write: Boolean = false): Str
                     7
                 ).red()
             )
+
+            write && type == "tag" -> println(
+                "writing object of type " + "tag".blue() + " into the object database " + this.substring(
+                    0,
+                    7
+                ).red()
+            )
         }
     }
 }

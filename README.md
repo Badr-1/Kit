@@ -44,6 +44,7 @@ I'll be implementing plumbing commands at first, then I'll implement porcelain c
 - [x] add
 - [x] unstage
 - [x] commit
+- [x] tag
 - [x] log
 - [x] status
 - [x] checkout
