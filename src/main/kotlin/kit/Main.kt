@@ -1,5 +1,6 @@
 package kit
 
+import com.github.ajalt.clikt.completion.CompletionCommand
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -142,8 +143,6 @@ object Main {
                 Config.read()
                 // load index file
                 GitIndex
-            } else {
-                println("Not a kit repository")
             }
         }
     }
@@ -161,7 +160,8 @@ object Main {
             LogCommand(),
             CheckoutCommand(),
             BranchCommand(),
-            TagCommand()
+            TagCommand(),
+            CompletionCommand()
         ).main(args)
     }
 }
