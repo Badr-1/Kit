@@ -1,183 +1,167 @@
 package kit
 
+import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.subcommands
+import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.optional
+import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.required
+import kit.plumbing.GitIndex
 import kit.porcelain.*
-import kit.porcelain.init
 import java.io.File
 
 object Main {
-    @JvmStatic
-    fun main(args: Array<String>) {
-        // make a working directory
-        args.joinToString(" ").run()
+    class InitCommand : CliktCommand(name = "init", help = "Initialize a new, empty repository") {
+        private val directory by argument(
+            help = "Directory to initialize the repository in",
+            name = "directory"
+        ).optional()
 
-        /*
-        val workingDir = File(System.getProperty("user.dir") + "/working")
-        workingDir.deleteRecursively()
-        workingDir.mkdirs()
-        System.setProperty("user.dir", workingDir.path)
-
-        "init badr".run()
-        val path = System.getProperty("user.dir")
-        "config user.name \"example\" user.email \"example@gmail.com\"".run()
-        "touch $path/file.txt".runCommand()
-        "add $path/file.txt".run()
-        "status".run()
-        "commit -m \"init\"".run()
-        "log".run()
-        "touch $path/file2.txt".runCommand()
-        "status".run()
-        "add $path/file2.txt".run()
-        "status".run()
-        "commit -m \"echo\"".run()
-        "branch new".run()
-        "checkout new".run()
-        "log".run()
-        "git".run()
-        */
-
+        override fun run() {
+            init(directory ?: "")
+        }
     }
 
-    private fun String.isValid(regex: Regex) = regex.matches(this)
-    private fun String.run() {
-        val args = this.split(" ")
-        val regex: Regex
-        when (args[0]) {
-            "git" -> {
-                regex = Regex("""git""")
-                if (!this.isValid(regex)) {
-                    println("usage: git")
-                    return
-                }
-                // rename .kit to .git
-                val kitDir = File("${System.getProperty("user.dir")}/.kit")
-                val gitDir = File("${System.getProperty("user.dir")}/.git")
-                kitDir.renameTo(gitDir)
-            }
+    class ConfigCommand : CliktCommand(name = "config", help = "Set kit configuration values") {
+        private val name by argument(
+            help = "The name of the configuration value",
+            name = "name"
+        )
+        private val value by argument(
+            help = "The value of the configuration value",
+            name = "value"
+        )
 
-            "init" -> {
-                regex = Regex("""init( (\S+))?""")
-                if (!this.isValid(regex)) {
-                    println("usage: init [directory]")
-                    return
-                }
-                val matchResult = regex.find(this)
-                val directory = matchResult?.groupValues?.get(2) ?: ""
-                init(directory)
-            }
+        override fun run() {
+            Config.set(name, value)
+        }
+    }
 
-            "config" -> {
-                // config user.name "Badr" user.email "email"
-                regex = Regex("""config user.name ([^"]+) user.email ([^"]+)""")
-                if (!this.isValid(regex)) {
-                    println("usage: config user.name \"name\" user.email \"email\"")
-                    return
-                }
-                val matchResult = regex.find(this)
-                val name = matchResult!!.groupValues[1]
-                val email = matchResult.groupValues[2]
-                Config.set("user.name", name)
-                Config.set("user.email", email)
-            }
+    class GitCommand : CliktCommand(name = "git", help = "convert kit repository to git repository") {
+        override fun run() {
+            // change .kit to .git
+            val kitDir = File("${System.getProperty("user.dir")}/.kit")
+            val gitDir = File("${System.getProperty("user.dir")}/.git")
+            kitDir.renameTo(gitDir)
+        }
+    }
 
-            "add" -> {
-                regex = Regex("""add (\S+)""")
-                if (!this.isValid(regex)) {
-                    println("usage: add <file>")
-                    return
-                }
-                val matchResult = regex.find(this)
-                val path = matchResult?.groupValues?.get(1)!!
-                if (path.startsWith(System.getProperty("user.dir")))
-                    add(path)
-                else
-                    add(System.getProperty("user.dir") + "/" + path)
-            }
+    class AddCommand : CliktCommand(name = "add", help = "Add file contents to the index") {
+        private val path by argument(
+            help = "The path of the file to add",
+            name = "path"
+        )
 
-            "unstage" -> {
-                regex = Regex("""unstage (\S+)""")
-                if (!this.isValid(regex)) {
-                    println("usage: unstage <file>")
-                    return
-                }
-                val matchResult = regex.find(this)
-                val path = matchResult?.groupValues?.get(1)!!
+        override fun run() {
+            if (path.startsWith(System.getProperty("user.dir")))
+                add(path)
+            else
+                add(System.getProperty("user.dir") + "/" + path)
+        }
+    }
+
+    class UnStageCommand : CliktCommand(name = "unstage", help = "Remove file contents from the index") {
+        private val path by argument(
+            help = "The path of the file to unstage",
+            name = "path"
+        )
+
+        override fun run() {
+            if (path.startsWith(System.getProperty("user.dir")))
                 unstage(path)
-            }
+            else
+                unstage(System.getProperty("user.dir") + "/" + path)
+        }
+    }
 
-            "status" -> {
-                regex = Regex("""status""")
-                if (!this.isValid(regex)) {
-                    println("usage: status")
-                    return
-                }
-                status()
-            }
+    class StatusCommand : CliktCommand(name = "status", help = "Show the working tree status") {
+        override fun run() {
+            status()
+        }
+    }
 
-            "commit" -> {
-                regex = Regex("""commit (-m ([^"]+))""")
-                if (!this.isValid(regex)) {
-                    println("usage: commit -m \"message\"")
-                    return
-                }
-                val matchResult = regex.find(this)
-                val message = matchResult?.groupValues?.get(2)!!
-                commit(message)
-            }
+    class CommitCommand : CliktCommand(name = "commit", help = "Record changes to the repository") {
+        private val message by option("-m", "--message", help = "Commit message").required()
 
-            "log" -> {
-                regex = Regex("""log""")
-                if (!this.isValid(regex)) {
-                    println("usage: log")
-                    return
-                }
-                log()
-            }
+        override fun run() {
+            commit(message)
+        }
+    }
 
-            "branch" -> {
-                regex = Regex("""branch (\S+)?""")
-                if (!this.isValid(regex)) {
-                    println("usage: branch <branch name> [commit hash]")
-                    return
-                }
-                val matchResult = regex.find(this)
-                val branchName = matchResult?.groupValues?.get(1)!!
+    class LogCommand : CliktCommand(name = "log", help = "Show commit logs") {
+        override fun run() {
+            log()
+        }
+    }
+
+    class CheckoutCommand : CliktCommand(name = "checkout", help = "Switch branches or restore working tree files") {
+        private val branchOrCommit by argument(
+            help = "The branch or commit to checkout",
+            name = "branchOrCommit"
+        )
+
+        override fun run() {
+            checkout(branchOrCommit)
+        }
+    }
+
+    class BranchCommand : CliktCommand(name = "branch", help = "create branch") {
+        private val branchName by argument(
+            help = "The name of the branch",
+            name = "branchName"
+        )
+        private val ref by argument().optional()
+
+        override fun run() {
+            if (ref == null)
                 branch(branchName)
-            }
+            else
+                branch(branchName, ref!!)
+        }
+    }
 
-            "checkout" -> {
-                regex = Regex("""checkout (\S+)""")
-                if (!this.isValid(regex)) {
-                    println("usage: checkout <branch name> | <commit hash>")
-                    return
-                }
-                val matchResult = regex.find(this)
-                val dest = matchResult?.groupValues?.get(1)!!
-                checkout(dest)
-            }
+    class TagCommand : CliktCommand(name = "tag", help = "create tag") {
+        private val tagName by argument(
+            help = "The name of the tag",
+            name = "tagName"
+        )
+        private val ref by argument().optional()
+        private val message by option("-m", "--message", help = "Tag message").required()
+        override fun run() {
+            if (ref == null)
+                tag(tagName, message)
+            else
+                tag(tagName, message, ref!!)
+        }
+    }
 
-            in arrayOf("help", "-h", "--help", "--h") -> {
-                help()
-            }
-
-            else -> {
-                help()
+    class Kit : CliktCommand(name = "kit", help = "The kit version control system") {
+        override fun run() {
+            if (File("${System.getProperty("user.dir")}/.kit").exists()) {
+                // load config file
+                Config.read()
+                // load index file
+                GitIndex
+            } else {
+                println("Not a kit repository")
             }
         }
     }
 
-    private fun help() {
-        println("usage: kit <command> [<args>]")
-        println("The most commonly used git commands are:")
-        println("   init       Create an empty kit repository or reinitialize an existing one")
-        println("   config     Set kit user name and email")
-        println("   add        Add file contents to the index")
-        println("   unstage    Remove file contents from the index")
-        println("   status     Show the working tree status")
-        println("   commit     Make a commit")
-        println("   log        Show commit logs")
-        println("   branch     Create branches")
-        println("   checkout   Switch branches or restore working tree files")
-        println("   help       Display help information")
-        println("   git        Convert kit repository to git repository (basically rename .kit to .git)")
+    @JvmStatic
+    fun main(args: Array<String>) {
+        Kit().subcommands(
+            InitCommand(),
+            ConfigCommand(),
+            GitCommand(),
+            AddCommand(),
+            UnStageCommand(),
+            StatusCommand(),
+            CommitCommand(),
+            LogCommand(),
+            CheckoutCommand(),
+            BranchCommand(),
+            TagCommand()
+        ).main(args)
     }
 }
