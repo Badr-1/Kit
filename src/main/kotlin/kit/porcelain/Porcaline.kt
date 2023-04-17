@@ -241,13 +241,24 @@ fun checkout(ref: String) {
 
         else -> {
             val branch = File("${System.getProperty("user.dir")}/.kit/refs/heads/$ref")
-            if (!branch.exists()) {
+            val tag = File("${System.getProperty("user.dir")}/.kit/refs/tags/$ref")
+            if (!branch.exists() && !tag.exists()) {
                 throw Exception("error: pathspec '$ref' did not match any file(s) known to kit")
             }
-            // change the HEAD
-            File("${System.getProperty("user.dir")}/.kit/HEAD").writeText("ref: refs/heads/$ref")
-            println("Writing ${"ref: refs/heads/$ref".red()} to ${".kit/HEAD".blue()}")
-            branch.readText()
+            if (branch.exists()) {
+                // change the HEAD
+                File("${System.getProperty("user.dir")}/.kit/HEAD").writeText("ref: refs/heads/$ref")
+                println("Writing ${"ref: refs/heads/$ref".red()} to ${".kit/HEAD".blue()}")
+                branch.readText()
+            } else // tag
+            {
+                // change the HEAD
+                val tagCommit = getContent(tag.readText()).split("\n")[0].split(" ")[1]
+                File("${System.getProperty("user.dir")}/.kit/HEAD").writeText(tagCommit)
+                println("Writing ${tagCommit.red()} to ${".kit/HEAD".blue()}")
+                tagCommit
+            }
+
         }
     }
 

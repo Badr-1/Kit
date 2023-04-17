@@ -432,6 +432,31 @@ class PorcelainKtTest {
     }
 
     @Test
+    fun `checkout a tag`() {
+        // create working directory
+        val workingDirectory = File("src/test/resources/workingDirectory")
+        workingDirectory.mkdir()
+        // set the working directory
+        System.setProperty("user.dir", workingDirectory.path)
+        init()
+        if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
+        // create a file
+        val filePath = "${workingDirectory.path}/test.txt"
+        File(filePath).writeText("test text")
+        add(filePath)
+        val commitHash = commit("test commit")
+        tag("test", "test tag")
+        File(filePath).writeText("test text 2")
+        add(filePath)
+        commit("test commit 2")
+        checkout("test")
+        assertEquals(commitHash, File("$workingDirectory/.kit/HEAD").readText())
+        // the content of the file should be the same as the checkout commit
+        assertEquals("test text", File(filePath).readText())
+        log()
+    }
+
+    @Test
     fun `checkout a branch`() {
         // create working directory
         val workingDirectory = File("src/test/resources/workingDirectory")
