@@ -262,7 +262,9 @@ fun log() {
     val commits = getHistory()
     if (commits.isEmpty())
         return
-    val branches = getRefs()
+    val branches = getBranches()
+    val tags = getTags()
+    val refs = branches + tags
     val head = when {
         File("${System.getProperty("user.dir")}/.kit/HEAD").readText().matches(Regex("[0-9a-f]{40}")) -> getHead()
         else -> {
@@ -287,20 +289,21 @@ fun log() {
         ).green()
         val author = "<${authorLine.joinToString(" ")}>".blue()
         val message = commitContent.split("\n")[4 - hasParent]
-        val refs = branches.filter { it.value == commit }.map { it.key }.toMutableList()
+        val commitRefs = refs.filter { it.value == commit }.map { it.key }.toMutableList()
         if (commit == head) {
-            refs.add("HEAD")
-        } else if (refs.contains(head)) {
-            refs.remove(head)
-            refs.add("HEAD -> $head")
+            commitRefs.add("HEAD")
+        } else if (commitRefs.contains(head)) {
+            commitRefs.remove(head)
+            commitRefs.add("HEAD -> $head")
         }
         val commitHash = commit.substring(0, 7).red()
-        val commitRefs = if (refs.isNotEmpty()) " (${refs.joinToString()})".yellow() else ""
+        val commitRefsString = if (commitRefs.isNotEmpty()) " (${commitRefs.joinToString()})".yellow() else ""
         println(
-            "* $commitHash$commitRefs $message $timeDifference $author"
+            "* $commitHash$commitRefsString $message $timeDifference $author"
         )
     }
 }
+
 
 /**
  * create a new branch
@@ -378,25 +381,6 @@ fun tag(tagName: String, tagMessage: String, objectHash: String = getHEADHash(),
     return hash
 }
 
-/**
- * get the commit hash of the HEAD
- * @return the commit hash of the HEAD
- */
-fun getHEADHash(): String {
-    val workingDirectory = System.getProperty("user.dir")
-    val headFile = File("${workingDirectory}/.kit/HEAD")
-    val head = headFile.readText()
-    return if (head.startsWith("ref:")) {
-        val ref = head.substringAfter("ref:").trim()
-        val refFile = File("${workingDirectory}/.kit/$ref")
-        if (!refFile.exists()) {
-            throw Exception("fatal: Failed to resolve 'HEAD' as a valid ref.")
-        }
-        refFile.readText()
-    } else {
-        head
-    }
-}
 
 /********** helper functions **********/
 
@@ -641,7 +625,7 @@ fun getParent(commitHash: String): String {
  * this is a helper function for the actual log command
  * @return the list of branches
  */
-fun getRefs(): MutableMap<String, String> {
+fun getBranches(): MutableMap<String, String> {
     val refs = mutableMapOf<String, String>()
     val branches = File("${System.getProperty("user.dir")}/.kit/refs/heads").walk().filter { it.isFile }.toList()
     for (branch in branches) {
@@ -650,4 +634,41 @@ fun getRefs(): MutableMap<String, String> {
     return refs
 }
 
+fun getTags(): Map<String, String> {
+    val tags = mutableMapOf<String, String>()
+    val tagDir = File("${System.getProperty("user.dir")}/.kit/refs/tags")
+    if (tagDir.exists()) {
+        tagDir.walk().forEach {
+            if (it.isFile) {
+                val tagHash = it.readText()
+                val tagName = it.relativePath("${System.getProperty("user.dir")}/.kit/refs/tags")
+                val tagContent = getContent(tagHash)
+                val tagCommit = tagContent.split("\n")[0].split(" ")[1]
+                tags["tag: $tagName"] = tagCommit
+            }
+        }
+    }
+    return tags
+}
+
+
+/**
+ * get the commit hash of the HEAD
+ * @return the commit hash of the HEAD
+ */
+fun getHEADHash(): String {
+    val workingDirectory = System.getProperty("user.dir")
+    val headFile = File("${workingDirectory}/.kit/HEAD")
+    val head = headFile.readText()
+    return if (head.startsWith("ref:")) {
+        val ref = head.substringAfter("ref:").trim()
+        val refFile = File("${workingDirectory}/.kit/$ref")
+        if (!refFile.exists()) {
+            throw Exception("fatal: Failed to resolve 'HEAD' as a valid ref.")
+        }
+        refFile.readText()
+    } else {
+        head
+    }
+}
 /****************************************/

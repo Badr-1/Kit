@@ -670,6 +670,12 @@ class PorcelainKtTest {
             if (i == 3) {
                 branch("demo")
             }
+            if(i == 4) {
+                tag("v1.0.0", "Version 1.0.0")
+            }
+            if(i == 5) {
+                tag("v1.0.1", "Version 1.0.1")
+            }
         }
         val history = getHistory()
         for (i in 0..4) {
