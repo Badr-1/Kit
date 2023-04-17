@@ -10,8 +10,17 @@ import com.github.ajalt.clikt.parameters.options.required
 import kit.plumbing.GitIndex
 import kit.porcelain.*
 import java.io.File
+import kotlin.system.exitProcess
 
 object Main {
+
+    private fun checkIfKitRepo() {
+        if (!File("${System.getProperty("user.dir")}/.kit").exists()) {
+            println("Not a kit repository")
+            exitProcess(1)
+        }
+    }
+
     class InitCommand : CliktCommand(name = "init", help = "Initialize a new, empty repository") {
         private val directory by argument(
             help = "Directory to initialize the repository in",
@@ -34,12 +43,14 @@ object Main {
         )
 
         override fun run() {
+            checkIfKitRepo()
             Config.set(name, value)
         }
     }
 
     class GitCommand : CliktCommand(name = "git", help = "convert kit repository to git repository") {
         override fun run() {
+            checkIfKitRepo()
             // change .kit to .git
             val kitDir = File("${System.getProperty("user.dir")}/.kit")
             val gitDir = File("${System.getProperty("user.dir")}/.git")
@@ -54,6 +65,7 @@ object Main {
         )
 
         override fun run() {
+            checkIfKitRepo()
             if (path.startsWith(System.getProperty("user.dir")))
                 add(path)
             else
@@ -68,6 +80,7 @@ object Main {
         )
 
         override fun run() {
+            checkIfKitRepo()
             if (path.startsWith(System.getProperty("user.dir")))
                 unstage(path)
             else
@@ -77,6 +90,7 @@ object Main {
 
     class StatusCommand : CliktCommand(name = "status", help = "Show the working tree status") {
         override fun run() {
+            checkIfKitRepo()
             status()
         }
     }
@@ -85,12 +99,14 @@ object Main {
         private val message by option("-m", "--message", help = "Commit message").required()
 
         override fun run() {
+            checkIfKitRepo()
             commit(message)
         }
     }
 
     class LogCommand : CliktCommand(name = "log", help = "Show commit logs") {
         override fun run() {
+            checkIfKitRepo()
             log()
         }
     }
@@ -102,6 +118,7 @@ object Main {
         )
 
         override fun run() {
+            checkIfKitRepo()
             checkout(branchOrCommit)
         }
     }
@@ -114,6 +131,7 @@ object Main {
         private val ref by argument().optional()
 
         override fun run() {
+            checkIfKitRepo()
             if (ref == null)
                 branch(branchName)
             else
@@ -129,6 +147,7 @@ object Main {
         private val ref by argument().optional()
         private val message by option("-m", "--message", help = "Tag message").required()
         override fun run() {
+            checkIfKitRepo()
             if (ref == null)
                 tag(tagName, message)
             else
