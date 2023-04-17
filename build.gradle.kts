@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.example"
-version = "v1.0"
+version = "v2.0.0"
 
 repositories {
     mavenCentral()
@@ -30,6 +30,7 @@ tasks.jar {
     manifest {
         attributes["Main-Class"] = "kit.Main"
         archiveBaseName.set("kit")
+        archiveFileName.set("kit.jar")
     }
     configurations["compileClasspath"].forEach { file: File ->
         from(zipTree(file.absoluteFile))

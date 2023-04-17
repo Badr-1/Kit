@@ -28,9 +28,7 @@ git model is based on four objects:
 - **Commit**: a commit is a snapshot of the repository, it's a collection of trees and blobs.
 - **Tag**: a tag is a label for a commit, it's a pointer to a commit.
 
-I'll be implementing plumbing commands at first, then I'll implement porcelain commands.
-
-
+I'v Implemented the following commands:
 ## Plumbing Commands
 - [x] hash-object
 - [x] cat-file
@@ -42,7 +40,7 @@ I'll be implementing plumbing commands at first, then I'll implement porcelain c
 ## Porcelain Commands
 - [x] init
 - [x] add
-- [x] unstage
+- [x] unStage
 - [x] commit
 - [x] tag
 - [x] log
@@ -50,6 +48,22 @@ I'll be implementing plumbing commands at first, then I'll implement porcelain c
 - [x] checkout
 - [x] branch
 - [x] config
+
+## Installation
+
+You don't need to install anything, just download the jar file from the [releases](https://github.com/Badr-1/Git-A-Home-Made-Recipe-With-Kotlin/releases) , and run it with 
+```bash
+java -jar kit.jar
+```
+and to use it like you use git, you can create a bash script with the following content and add it to your path
+```bash
+#!/bin/bash
+java -jar /path/to/kit.jar "$@"
+```
+just make sure that you replace `/path/to/kit.jar` with the actual path to the jar file.
+
+
+
 ## Screenshots
 
 ### Init a repo creating a file and checking status
@@ -58,7 +72,7 @@ I'll be implementing plumbing commands at first, then I'll implement porcelain c
     <img src="images/kit-init.png">
 </div>
 
-### Adding file to index and configuring user then commiting and log to see the commit
+### Adding file to index and configuring user then committing and log to see the commit
 
 <div align="center">
     <img src="images/kit-add-status.png">
@@ -74,6 +88,12 @@ I'll be implementing plumbing commands at first, then I'll implement porcelain c
     <img src="images/kit-branch-checkout.png">
 </div>
 
+### Create a tag
+
+<div align="center">
+    <img src="images/kit-tag.png">
+</div>
+
 ### Convert repo to git repo
 
 <div align="center">
@@ -85,3 +105,17 @@ I'll be implementing plumbing commands at first, then I'll implement porcelain c
 <div align="center">
     <img src="images/kit-help.png">
 </div>
+
+## How to contribute
+1. Fork the project
+2. Clone the project
+3. Create a new branch with the name of the feature you're going to implement
+4. Implement the feature
+5. write tests for the feature
+6. commit and push your changes
+7. create a pull request
+
+And I'll gladly review and merge your changes 🎉
+
+## License
+[MIT](https://choosealicense.com/licenses/mit/)
