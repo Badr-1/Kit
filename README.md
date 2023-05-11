@@ -6,7 +6,7 @@
 ## About
 
 This Project is My Attempt To Reimplement Git With Kotlin.
-<br> Why? I See You Wandering... Why Not?\
+<br> Why? I See You Wondering... Why Not?\
 I've Been Reading About Git For Quite Some Time And have Explained It To Many Of My Peers.\
 And While I Was Learning Kotlin With JetBrains Academy, One Of The Projects Was About Version Control System, especially
 Git, But The Implementation Level Wasn't That Interesting, After That I came Across [CodeCrafters](https://codecrafters.io/),
