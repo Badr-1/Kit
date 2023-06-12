@@ -298,6 +298,7 @@ class PorcelainKtTest {
         // set the working directory
         System.setProperty("user.dir", workingDirectory.path)
         init()
+        File("${workingDirectory.path}/test.txt").writeText("test text")
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         val exception = assertThrows<Exception> {
             commit("test commit")

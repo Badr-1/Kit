@@ -164,6 +164,9 @@ fun writeTree(directory: String, write: Boolean = false): String {
             entries.add(TreeEntry(mode, file.name, indexEntry.sha1))
         }
     }
+    if (entries.isEmpty())
+        return ""
+
     return mkTree(
         entries,
         write
