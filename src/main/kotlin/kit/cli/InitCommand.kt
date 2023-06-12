@@ -4,6 +4,7 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.optional
 import kit.porcelain.init
+import java.nio.file.Path
 
 class InitCommand : CliktCommand(name = "init", help = "Initialize a new, empty repository") {
     private val directory by argument(
@@ -12,6 +13,7 @@ class InitCommand : CliktCommand(name = "init", help = "Initialize a new, empty 
     ).optional()
 
     override fun run() {
-        init(directory ?: "")
+        val path = Path.of(directory ?: "").toAbsolutePath()
+        init(path)
     }
 }

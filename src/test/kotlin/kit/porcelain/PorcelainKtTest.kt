@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import kit.plumbing.GitIndex
 import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.pathString
 
 class PorcelainKtTest {
 
@@ -22,11 +25,14 @@ class PorcelainKtTest {
     @Test
     fun `initialize a repository`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
-        assertEquals("Initialized empty Kit repository in ${File("${workingDirectory}/.kit").absolutePath}", init())
+        System.setProperty("user.dir", workingDirectory.toString())
+        assertEquals(
+            "Initialized empty Kit repository in ${File("${workingDirectory}/.kit").absolutePath}",
+            init(workingDirectory)
+        )
         assert(File("$workingDirectory/.kit").exists())
         assert(File("$workingDirectory/.kit/objects").exists())
         assert(File("$workingDirectory/.kit/refs").exists())
@@ -39,14 +45,14 @@ class PorcelainKtTest {
     @Test
     fun `initialize a repository with name`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         val repositoryName = "demo"
         assertEquals(
             "Initialized empty Kit repository in ${File("${workingDirectory}/$repositoryName/.kit").absolutePath}",
-            init(repositoryName)
+            init(Path.of(workingDirectory.pathString, repositoryName).toAbsolutePath())
         )
         assert(File("$workingDirectory/$repositoryName/.kit").exists())
         assert(File("$workingDirectory/$repositoryName/.kit/objects").exists())
@@ -60,28 +66,28 @@ class PorcelainKtTest {
     @Test
     fun `initialize a repository with name in an existing repository`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         val repositoryName = "demo"
         assertEquals(
             "Initialized empty Kit repository in ${File("${workingDirectory}/$repositoryName/.kit").absolutePath}",
-            init(repositoryName)
+            init(Path.of(workingDirectory.pathString,repositoryName).toAbsolutePath())
         )
         assertEquals(
             "Reinitialized existing Kit repository in ${File("${workingDirectory}/$repositoryName/.kit").absolutePath}",
-            init(repositoryName)
+            init(Path.of(workingDirectory.pathString,repositoryName).toAbsolutePath())
         )
     }
 
     @Test
     fun `add non-existent file`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         val filePath = "src/test/resources/workingDirectory/non-existent-file"
         val exception = assertThrows<Exception> {
@@ -93,10 +99,10 @@ class PorcelainKtTest {
     @Test
     fun `add a file outside the repo`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         val filePath = "${workingDirectory.parent}/test.txt"
         File(filePath).writeText("test text")
@@ -110,13 +116,13 @@ class PorcelainKtTest {
     @Test
     fun `add file inside the kit directory`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
-        val filePath = "${workingDirectory.path}/.kit/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/.kit/test.txt"
         File(filePath).writeText("test text")
 
         assertEquals(0, GitIndex.getEntryCount())
@@ -125,13 +131,13 @@ class PorcelainKtTest {
     @Test
     fun `add a file`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
 
         assertEquals(0, GitIndex.getEntryCount())
@@ -142,13 +148,13 @@ class PorcelainKtTest {
     @Test
     fun `remove a file that's not in the index`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
         val exception = assertThrows<Exception> {
             unstage(filePath)
@@ -159,10 +165,10 @@ class PorcelainKtTest {
     @Test
     fun `remove a file that's outside the repo`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         val filePath = "${workingDirectory.parent}/test.txt"
         File(filePath).writeText("test text")
@@ -176,12 +182,12 @@ class PorcelainKtTest {
     @Test
     fun `remove a file inside the kit directory`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
-        val filePath = "${workingDirectory.path}/.kit/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/.kit/test.txt"
         File(filePath).writeText("test text")
         val exception = assertThrows<Exception> {
             unstage(filePath)
@@ -193,13 +199,13 @@ class PorcelainKtTest {
     @Test
     fun `remove a file from index`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
         add(filePath)
         assertEquals(1, GitIndex.getEntryCount())
@@ -210,10 +216,10 @@ class PorcelainKtTest {
     @Test
     fun `status without a commit`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // array of files
@@ -222,7 +228,7 @@ class PorcelainKtTest {
             "test2.txt",
             "test3.txt",
             "test4.txt"
-        ).map { File("${workingDirectory.path}/$it") }.onEach { it.writeText("test text") }
+        ).map { File("${workingDirectory.absolutePathString()}/$it") }.onEach { it.writeText("test text") }
         add(files[0].path)
         File("$workingDirectory/test").mkdir()
         files[0].renameTo(File("$workingDirectory/test/${files[0].name}"))
@@ -233,10 +239,10 @@ class PorcelainKtTest {
     @Test
     fun `status with a head on a branch`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // array of files
@@ -245,7 +251,7 @@ class PorcelainKtTest {
             "test2.txt",
             "test3.txt",
             "test4.txt"
-        ).map { File("${workingDirectory.path}/$it") }.onEach { it.writeText("test text") }
+        ).map { File("${workingDirectory.absolutePathString()}/$it") }.onEach { it.writeText("test text") }
         add(files[0].path)
         add(files[1].path)
         add(files[2].path)
@@ -263,10 +269,10 @@ class PorcelainKtTest {
     @Test
     fun `status with a head on a detached state`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // array of files
@@ -275,7 +281,7 @@ class PorcelainKtTest {
             "test2.txt",
             "test3.txt",
             "test4.txt"
-        ).map { File("${workingDirectory.path}/$it") }.onEach { it.writeText("test text") }
+        ).map { File("${workingDirectory.absolutePathString()}/$it") }.onEach { it.writeText("test text") }
         add(files[0].path)
         add(files[1].path)
         add(files[2].path)
@@ -290,15 +296,16 @@ class PorcelainKtTest {
         unstage(files[1].path)
         status()
     }
+
     @Test
-    fun `first commit on a clean tree`(){
+    fun `first commit on a clean tree`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
-        File("${workingDirectory.path}/test.txt").writeText("test text")
+        File("${workingDirectory.absolutePathString()}/test.txt").writeText("test text")
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         val exception = assertThrows<Exception> {
             commit("test commit")
@@ -307,16 +314,16 @@ class PorcelainKtTest {
     }
 
     @Test
-    fun `second commit on a clean tree`(){
+    fun `second commit on a clean tree`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // create a file
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
         add(filePath)
         commit("test commit")
@@ -330,14 +337,14 @@ class PorcelainKtTest {
     @Test
     fun `commit on master`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // create a file
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
         add(filePath)
         val commitHash = commit("test commit")
@@ -349,14 +356,14 @@ class PorcelainKtTest {
     @Test
     fun `commit twice`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // create a file
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
         add(filePath)
         commit("test commit")
@@ -369,14 +376,14 @@ class PorcelainKtTest {
     @Test
     fun `commit when HEAD is at Detached state`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // create a file
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
         add(filePath)
         val commitHash = commit("test commit")
@@ -392,14 +399,14 @@ class PorcelainKtTest {
     @Test
     fun `checkout non-existent branch`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // create a file
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
         add(filePath)
         commit("test commit")
@@ -412,14 +419,14 @@ class PorcelainKtTest {
     @Test
     fun `checkout a commit`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // create a file
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
         add(filePath)
         val commitHash = commit("test commit")
@@ -435,14 +442,14 @@ class PorcelainKtTest {
     @Test
     fun `checkout a tag`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // create a file
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
         add(filePath)
         val commitHash = commit("test commit")
@@ -460,14 +467,14 @@ class PorcelainKtTest {
     @Test
     fun `checkout a branch`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // create a file
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
         add(filePath)
         commit("test commit")
@@ -481,14 +488,14 @@ class PorcelainKtTest {
     @Test
     fun `checkout an executable file`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // create a file
-        val filePath = "${workingDirectory.path}/test.sh"
+        val filePath = "${workingDirectory.absolutePathString()}/test.sh"
         File(filePath).writeText("echo test")
         File(filePath).setExecutable(true)
         add(filePath)
@@ -506,14 +513,14 @@ class PorcelainKtTest {
     @Test
     fun `checkout a directory`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // create a file
-        val filePath = "${workingDirectory.path}/test/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test/test.txt"
         File(filePath).parentFile.mkdirs()
         File(filePath).writeText("test text")
         add(filePath)
@@ -530,14 +537,14 @@ class PorcelainKtTest {
     @Test
     fun `make an existent branch`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // create a file
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
         add(filePath)
         commit("test commit")
@@ -550,14 +557,14 @@ class PorcelainKtTest {
     @Test
     fun `make a new branch without directories`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // create a file
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
         add(filePath)
         val hash = commit("test commit")
@@ -569,14 +576,14 @@ class PorcelainKtTest {
     @Test
     fun `make a new branch with directories`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // create a file
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
         add(filePath)
         val hash = commit("test commit")
@@ -588,14 +595,14 @@ class PorcelainKtTest {
     @Test
     fun `make a new branch with a ref`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // create a file
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
         add(filePath)
         val hash = commit("test commit")
@@ -607,14 +614,14 @@ class PorcelainKtTest {
     @Test
     fun `make a new branch without a ref`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // create a file
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
         add(filePath)
         val hash = commit("test commit")
@@ -627,10 +634,10 @@ class PorcelainKtTest {
     @Test
     fun `make a new branch without a commit`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         val exception = assertThrows<Exception> {
@@ -643,10 +650,10 @@ class PorcelainKtTest {
     @Test
     fun `set config`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         Config.set("user.name", "test")
@@ -659,14 +666,14 @@ class PorcelainKtTest {
     @Test
     fun `get history one commit`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // create a file
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
         add(filePath)
         val hash = commit("test commit")
@@ -679,16 +686,16 @@ class PorcelainKtTest {
     @Test
     fun `get history multiple commit`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         val commits = mutableListOf<String>()
         for (i in 1..5) {
             // create a file
-            val filePath = "${workingDirectory.path}/test.txt"
+            val filePath = "${workingDirectory.absolutePathString()}/test.txt"
             File(filePath).writeText("test text $i")
             add(filePath)
             val hash = commit("test commit")
@@ -696,10 +703,10 @@ class PorcelainKtTest {
             if (i == 3) {
                 branch("demo")
             }
-            if(i == 4) {
+            if (i == 4) {
                 tag("v1.0.0", "Version 1.0.0")
             }
-            if(i == 5) {
+            if (i == 5) {
                 tag("v1.0.1", "Version 1.0.1")
             }
         }
@@ -713,16 +720,16 @@ class PorcelainKtTest {
     @Test
     fun `get history multiple commit with Detached HEAD`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         val commits = mutableListOf<String>()
         for (i in 1..5) {
             // create a file
-            val filePath = "${workingDirectory.path}/test.txt"
+            val filePath = "${workingDirectory.absolutePathString()}/test.txt"
             File(filePath).writeText("test text $i")
             add(filePath)
             val hash = commit("test commit")
@@ -744,10 +751,10 @@ class PorcelainKtTest {
     @Test
     fun `get empty history`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         val history = getHistory()
@@ -757,14 +764,14 @@ class PorcelainKtTest {
     @Test
     fun `create a tag`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // create a file
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
         add(filePath)
         commit("test commit")
@@ -775,14 +782,14 @@ class PorcelainKtTest {
     @Test
     fun `create an existing tag`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // create a file
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
         add(filePath)
         commit("test commit")
@@ -796,14 +803,14 @@ class PorcelainKtTest {
     @Test
     fun `create a tag with directories`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // create a file
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
         add(filePath)
         commit("test commit")
@@ -814,14 +821,14 @@ class PorcelainKtTest {
     @Test
     fun `create tag with HEAD pointing to a commit`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         // create a file
-        val filePath = "${workingDirectory.path}/test.txt"
+        val filePath = "${workingDirectory.absolutePathString()}/test.txt"
         File(filePath).writeText("test text")
         add(filePath)
         checkout(commit("test commit"))
@@ -832,16 +839,16 @@ class PorcelainKtTest {
     @Test
     fun `create a tag on a commit other than HEAD`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         val commits = mutableListOf<String>()
         for (i in 1..5) {
             // create a file
-            val filePath = "${workingDirectory.path}/test.txt"
+            val filePath = "${workingDirectory.absolutePathString()}/test.txt"
             File(filePath).writeText("test text $i")
             add(filePath)
             val hash = commit("test commit")
@@ -852,13 +859,12 @@ class PorcelainKtTest {
     }
 
     @Test
-    fun `create a tag without any commit`()
-    {
+    fun `create a tag without any commit`() {
         // create working directory
-        val workingDirectory = File("src/test/resources/workingDirectory")
-        workingDirectory.mkdir()
+        val workingDirectory = Path.of("src/test/resources/workingDirectory").toAbsolutePath()
+        workingDirectory.toFile().mkdir()
         // set the working directory
-        System.setProperty("user.dir", workingDirectory.path)
+        System.setProperty("user.dir", workingDirectory.toString())
         init()
         if (GitIndex.getEntryCount() != 0) GitIndex.clearIndex()
         val exception = assertThrows<Exception> {

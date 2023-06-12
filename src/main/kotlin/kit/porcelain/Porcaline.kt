@@ -4,50 +4,52 @@ import kit.plumbing.*
 import kit.porcelain.ChangeType.*
 import kit.utils.*
 import java.io.File
+import java.nio.file.Path
 import java.time.*
 import java.util.*
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.exists
 
 
 /**
  * Initialize a new repository or reinitialize an existing one
- * @param repositoryName the name of the repository, if empty the current directory will be used
+ * @param repositoryPath the name of the repository, if empty the current directory will be used
  * @return a message indicating the result of the operation
  */
-fun init(repositoryName: String = ""): String {
-    var path = System.getProperty("user.dir")
-    if (repositoryName.isNotEmpty()) {
-        File("$path/$repositoryName").mkdir()
-        if (!path.endsWith("/$repositoryName")) {
-            path += "/$repositoryName"
-        }
-        System.setProperty("user.dir", path)
-    }
-    path += '/'
-    if (File("$path.kit").exists()) {
-        return "Reinitialized existing Kit repository in ${File("${path}.kit").absolutePath}".apply { println(this) }
-    }
+fun init(repositoryPath: Path = Path.of(System.getProperty("user.dir")).toAbsolutePath()): String {
+    repositoryPath.toFile().mkdir()
+    val kitPath = repositoryPath.resolve(".kit")
+    val database = kitPath.resolve("objects")
+    val refs = kitPath.resolve("refs")
+    val heads = refs.resolve("heads")
+    val head = kitPath.resolve("HEAD")
+    val config = kitPath.resolve("config")
+
+    if (kitPath.exists())
+        return "Reinitialized existing Kit repository in ${kitPath.absolutePathString()}".apply { println(this) }
     // repository
-    println("Creating ${File("${path}.kit").relativePath()} directory".green())
-    File("${path}.kit").mkdir()
+    println("Creating ${kitPath.toFile().relativePath()} directory".green())
+    kitPath.toFile().mkdir()
     // objects database
-    println("Creating ${File("${path}.kit/objects").relativePath()} object database directory".green())
-    File("${path}.kit/objects").mkdir()
+    println("Creating ${database.toFile().relativePath()} object database directory".green())
+    database.toFile().mkdir()
     // refs
-    println("Creating ${File("${path}.kit/refs").relativePath()} directory".green())
-    File("${path}.kit/refs").mkdir()
+    println("Creating ${refs.toFile().relativePath()} directory".green())
+    refs.toFile().mkdir()
     // heads
-    println("Creating ${File("${path}.kit/refs/heads").relativePath()} for branches directory".green())
-    File("${path}.kit/refs/heads").mkdir()
+    println("Creating ${heads.toFile().relativePath()} for branches directory".green())
+    heads.toFile().mkdir()
     // HEAD
-    println("Creating ${File("${path}.kit/HEAD").relativePath()} file".green())
-    File("${path}.kit/HEAD").writeText("ref: refs/heads/master")
+    println("Creating ${head.toFile().relativePath()} file".green())
+    head.toFile().writeText("ref: refs/heads/master")
     println("Writing default branch name to HEAD".green())
     // config
     // default config
+    System.setProperty("user.dir", repositoryPath.toAbsolutePath().toString())
     Config.unset()
     Config.write()
-    println("Writing default config to ${File("${path}.kit/config").relativePath()}".green())
-    return "Initialized empty Kit repository in ${File("${path}.kit").absolutePath}".apply { println(this) }
+    println("Writing default config to ${config.toFile().relativePath()}".green())
+    return "Initialized empty Kit repository in ${File("$kitPath").absolutePath}".apply { println(this) }
 }
 
 /**
@@ -366,7 +368,7 @@ fun branch(branchName: String, ref: String = "HEAD") {
  */
 fun tag(tagName: String, tagMessage: String, objectHash: String = getHEADHash(), tagType: String = "commit"): String {
     val tagFile = File("${System.getProperty("user.dir")}/.kit/refs/tags/$tagName")
-    // if tag has already been created throw an exception
+    // if a tag has already been created, throw an exception
     if (tagFile.exists()) {
         throw Exception("fatal: tag '$tagName' already exists")
     }
