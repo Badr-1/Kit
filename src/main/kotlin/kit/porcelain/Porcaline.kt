@@ -5,6 +5,7 @@ import kit.porcelain.ChangeType.*
 import kit.utils.*
 import java.io.File
 import java.nio.file.Path
+import java.text.SimpleDateFormat
 import java.time.*
 import java.util.*
 import kotlin.io.path.absolutePathString
@@ -373,7 +374,7 @@ fun tag(tagName: String, tagMessage: String, objectHash: String = getHEADHash(),
         throw Exception("fatal: tag '$tagName' already exists")
     }
     val content =
-        "object $objectHash\ntype $tagType\ntag $tagName\ntagger ${Config.get("user.name")} <${Config.get("user.email")}> ${System.currentTimeMillis() / 1000} +0200\n\n$tagMessage\n"
+        "object $objectHash\ntype $tagType\ntag $tagName\ntagger ${Config.get("user.name")} <${Config.get("user.email")}> ${System.currentTimeMillis() / 1000} ${SimpleDateFormat("Z").format(Date())}\n\n$tagMessage\n"
     val hash = hashObject(content, "tag", true)
 
     // if refs/tags doesn't exist create it

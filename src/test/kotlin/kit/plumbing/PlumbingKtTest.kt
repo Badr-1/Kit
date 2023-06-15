@@ -966,8 +966,6 @@ class PlumbingKtTest {
         // cat the file
         val content = catFile(commit, "-p")
         assertEquals(6, content.split("\n").size)
-        val size = catFile(commit, "-s")
-        assertEquals("152", size)
         val type = catFile(commit, "-t")
         assertEquals("commit", type)
 

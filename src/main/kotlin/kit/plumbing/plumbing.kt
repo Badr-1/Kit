@@ -4,6 +4,10 @@ import kit.porcelain.Config
 import kit.utils.*
 import java.io.*
 import java.security.MessageDigest
+import java.text.SimpleDateFormat
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 
 /**
@@ -49,12 +53,14 @@ fun commitTree(treeHash: String, commitMessage: String, parentCommit: String = "
     if (File("${System.getProperty("user.dir")}/.kit/config").exists()) {
         Config.read()
     }
+    val now = ZonedDateTime.now()
+    val timestamp = "${now.toEpochSecond()} ${now.format(DateTimeFormatter.ofPattern(" Z "))}"
     val tree = "tree $treeHash\n"
     val parent = if (parentCommit.isEmpty()) parentCommit else "parent $parentCommit\n"
     val author =
-        "author ${Config.get("user.name")} <${Config.get("user.email")}> ${System.currentTimeMillis() / 1000} +0200\n"
+        "author ${Config.get("user.name")} <${Config.get("user.email")}> $timestamp\n"
     val committer =
-        "committer ${Config.get("user.name")} <${Config.get("user.email")}> ${System.currentTimeMillis() / 1000} +0200\n\n"
+        "committer ${Config.get("user.name")} <${Config.get("user.email")}> $timestamp\n\n"
     val message = commitMessage.ifEmpty { throw Exception("commit message is empty") } + "\n"
     val content = tree + parent + author + committer + message
     return hashObject(content, type = "commit", write = true)
